@@ -690,8 +690,7 @@ class SemiPhysBuildingSimulation(gym.core.Env):
                                  "Baseline_with_energy",
                                  "Baseline_OCC_PPD",
                                  ]
-        self.reward_mode = "Baseline_with_energy"
-
+        self.reward_mode = "Baseline_without_energy"
 
         if self.reward_mode == "Squared_diff":
             target = 24
@@ -715,7 +714,6 @@ class SemiPhysBuildingSimulation(gym.core.Env):
             total_energy_base = 205/600
 
             constant = 40.
-
 
             reward_energy_consumption = -constant * (total_energy_consumption - total_energy_base)
 

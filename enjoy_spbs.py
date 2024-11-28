@@ -3,14 +3,11 @@ import SemiPhysBuildingSim
 import gym
 import numpy as np
 # 加载模型
-model_dict = {"1111_training_1e5": "logs/dqn_original_2024-11-11-15-40-28/dqn_original/SemiPhysBuildingSim-v0_10",
-              "1112_training_1e6": "logs/dqn_original_2024-11-11-16-34-21/dqn_original/SemiPhysBuildingSim-v0_2",
-              "1112_training_1e6_Baseline_without_energy":
-                  "logs/dqn_original_2024-11-12-11-23-04/dqn_original/SemiPhysBuildingSim-v0_1",
-              "1112_training_1e6_Baseline_with_energy":"logs/dqn_original_2024-11-12-14-42-15/dqn_original/SemiPhysBuildingSim-v0_1"}
+model_dict = {"1128_Squared_diff": "logs/dqn_2024-11-28-16-06-02/dqn/SemiPhysBuildingSim-v0_1",
+              "1128_Baseline_without_energy": "logs/dqn_2024-11-28-16-06-55/dqn/SemiPhysBuildingSim-v0_1",}
 
-# model = DQN.load
-model = DQN.load( model_dict["1112_training_1e6_Baseline_with_energy"]+"/best_model.zip")
+model_key = "1128_Baseline_without_energy"
+model = DQN.load( model_dict[model_key]+"/best_model.zip")
 
 # 加载环境
 env1 = gym.make("SemiPhysBuildingSim-v0")
