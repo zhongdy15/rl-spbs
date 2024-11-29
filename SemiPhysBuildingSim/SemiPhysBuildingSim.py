@@ -690,7 +690,7 @@ class SemiPhysBuildingSimulation(gym.core.Env):
                                  "Baseline_with_energy",
                                  "Baseline_OCC_PPD",
                                  ]
-        self.reward_mode = "Baseline_without_energy"
+        self.reward_mode = "Baseline_with_energy"
 
         if self.reward_mode == "Squared_diff":
             target = 24
@@ -707,17 +707,13 @@ class SemiPhysBuildingSimulation(gym.core.Env):
             T_up = 25
             T_low = 23
             r_t = np.abs(room_temp - T_up) + np.abs(room_temp - T_low) - np.abs(T_up - T_low)
-            reward_temp = -np.sum(r_t)
+            reward_temp = -np.sum(r_t) # 总温度偏差 0- -21左右，每个房间偏1.5度，奖励值-3，总偏差-21
 
             energy_vec = get_latest_observation_from_every_room(self.data_recorder, "FCU_power")
-            total_energy_consumption = np.sum(energy_vec)
-            total_energy_base = 205/600
+            total_energy_consumption = np.sum(energy_vec) # 总能耗 范围：0.0 - 0.096*7即0.0 - 0.672
 
-            constant = 40.
-
-            reward_energy_consumption = -constant * (total_energy_consumption - total_energy_base)
-
-            reward = reward_temp + reward_energy_consumption
+            constant = 100 # 1000,100,10 挨着试一遍
+            reward = reward_temp - constant * total_energy_consumption
 
         # if False:#elif self.reward_mode == "Baseline_OCC_PPD":
         #     occupant_num_vec = get_latest_observation_from_every_room(self.data_recorder, "occupant_num")

@@ -4,9 +4,16 @@ import gym
 import numpy as np
 # 加载模型
 model_dict = {"1128_Squared_diff": "logs/dqn_2024-11-28-16-06-02/dqn/SemiPhysBuildingSim-v0_1",
-              "1128_Baseline_without_energy": "logs/dqn_2024-11-28-16-06-55/dqn/SemiPhysBuildingSim-v0_1",}
+              "1128_Baseline_without_energy": "logs/dqn_2024-11-28-16-06-55/dqn/SemiPhysBuildingSim-v0_1",
+              "1128_Baseline_with_energy_constant1000":"logs/dqn_2024-11-28-21-48-06/dqn/SemiPhysBuildingSim-v0_1",
+              "1128_Baseline_with_energy_constant100":"logs/dqn_2024-11-28-21-48-49/dqn/SemiPhysBuildingSim-v0_1",
+              "1128_Baseline_with_energy_constant10":"logs/dqn_2024-11-28-21-49-19/dqn/SemiPhysBuildingSim-v0_1",
+              "1128_Baseline_with_energy_constant1":"logs/dqn_2024-11-28-21-49-49/dqn/SemiPhysBuildingSim-v0_1",
+              "1128_Baseline_with_energy_constant1e-1":"logs/dqn_2024-11-28-21-50-26/dqn/SemiPhysBuildingSim-v0_1",
+              "1128_Baseline_with_energy_constant1e-2":"logs/dqn_2024-11-28-21-51-03/dqn/SemiPhysBuildingSim-v0_1",}
 
-model_key = "1128_Baseline_without_energy"
+model_key = "1128_Baseline_with_energy_constant1e-2"
+print("Loading model: " + model_key)
 model = DQN.load( model_dict[model_key]+"/best_model.zip")
 
 # 加载环境

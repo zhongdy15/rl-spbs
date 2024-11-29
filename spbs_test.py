@@ -9,7 +9,7 @@ algo_filename = algo + "_" + time_flag
 seed_list = [0,10,20]
 
 env_num = len(env_list)
-gpu_list = [7]
+gpu_list = [6]
 assert len(gpu_list) == env_num, "gpu_setting is incorrect"
 
 for seed in seed_list:
