@@ -25,6 +25,17 @@ class SemiPhysBuildingSimulation(gym.core.Env):
                 default_hyperparams = EasyDict(yaml.safe_load(file))
             hyperparams = convert_lists_to_np_arrays(params=default_hyperparams)
         self.hyperparams = hyperparams
+
+        # Set the reward mode & trardoff constant for energy consumption
+        self.reward_mode_list = ["Squared_diff",
+                                 "Baseline_without_energy",
+                                 "Baseline_with_energy",
+                                 "Baseline_OCC_PPD",
+                                 ]
+        self.reward_mode = "Baseline_with_energy"
+        self.trardoff_constant = 10  # 10 or 100
+
+
         # Store all the data in this Dict
         self.data_recorder = {}
         self.step_min = 0
@@ -688,12 +699,7 @@ class SemiPhysBuildingSimulation(gym.core.Env):
         room_temp = get_latest_observation_from_every_room(self.data_recorder,"room_temp")
 
         reward = -1000
-        self.reward_mode_list = ["Squared_diff",
-                                 "Baseline_without_energy",
-                                 "Baseline_with_energy",
-                                 "Baseline_OCC_PPD",
-                                 ]
-        self.reward_mode = "Baseline_with_energy"
+        constant = self.trardoff_constant
 
         if self.reward_mode == "Squared_diff":
             target = 24
@@ -715,21 +721,62 @@ class SemiPhysBuildingSimulation(gym.core.Env):
             energy_vec = get_latest_observation_from_every_room(self.data_recorder, "FCU_power")
             total_energy_consumption = np.sum(energy_vec) # 总能耗 范围：0.0 - 0.096*7即0.0 - 0.672
 
-            constant = 100 # 1000,100,10 挨着试一遍
             reward = reward_temp - constant * total_energy_consumption
 
-        # if False:#elif self.reward_mode == "Baseline_OCC_PPD":
-        #     occupant_num_vec = get_latest_observation_from_every_room(self.data_recorder, "occupant_num")
+        elif self.reward_mode == "Baseline_OCC_PPD":
+            occupant_num_vec = get_latest_observation_from_every_room(self.data_recorder, "occupant_num")
+            # Sitting 1, walking 2, standing 3
+            occupant_activities_num = occupant_num_vec.reshape(7, 3)
+            print("occupant_num_vec:", occupant_num_vec)
+            print("occupant_activities_num:", occupant_activities_num)
 
+            # from exp_analysis/pmv_plot1129.py
 
+            # vr_sitting = 0.15 vr_walking = 0.45 vr_standing = 0.27
+            vr_activity = [0.15, 0.45, 0.27]
+            # met_sitting = 1.0 met_walking = 2.0 met_standing = 1.4
+            met_activity = [1.0, 2.0, 1.4]
+            # clo_sitting = 0.63 clo_walking = 0.504 clo_standing = 0.558
+            clo_activity = [0.63, 0.504, 0.558]
 
-        # baseline + 能耗
+            rh = 40  # 湿度
 
-        # TODO 11/11 Step1: 第一类奖励：PPD 代表温差（就是说如果是没有人的话reward=0），有人的话
-        # 每个人都有自己的PPD，对7个房间里面的所有人的PPD求和 再求平均
+            room_temp = get_latest_observation_from_every_room(self.data_recorder, "room_temp")
 
-        # TODO 11/11 Step2: 第二类奖励（最重要的）：能耗
+            from pythermalcomfort.models import pmv_ppd
+            pmv_matrix = np.zeros_like(occupant_activities_num,dtype=float)
+            ppd_matrix = np.zeros_like(occupant_activities_num,dtype=float)
 
+            # Calculate PMV and PPD for each room and each occupant activity
+            for i in range(7):
+                for j in range(3):
+                    tdb = room_temp[i]
+                    vr = vr_activity[j]
+                    met = met_activity[j]
+                    clo = clo_activity[j]
+                    results = pmv_ppd(tdb=tdb, tr=tdb, vr=vr, rh=rh, met=met, clo=clo, standard="ASHRAE")
+                    pmv_matrix[i][j] = results['pmv']
+                    ppd_matrix[i][j] = results['ppd']
+
+            # print("pmv_matrix:", pmv_matrix)
+            # print("ppd_matrix:", ppd_matrix)
+
+            total_occupant_num = np.sum(occupant_num_vec)
+            total_pmv = np.sum(pmv_matrix * occupant_activities_num)
+            total_ppd = np.sum(ppd_matrix * occupant_activities_num)
+            # print("total_occupant_num:", total_occupant_num)
+            # print("total_pmv:", total_pmv)
+            # print("total_ppd:", total_ppd)
+            # print("oooo")
+            if total_occupant_num == 0:
+                reward_temp = 0.0
+            else:
+                # 平均ppd越小（越接近0）越好，reward越大（越接近0）越好
+                reward_temp = - total_ppd / total_occupant_num
+
+            # energy_vec = get_latest_observation_from_every_room(self.data_recorder, "FCU_power")
+            # total_energy_consumption = np.sum(energy_vec)  # 总能耗 范围：0.0 - 0.096*7即0.0 - 0.672
+            # reward = reward_temp - constant * total_energy_consumption
 
         return reward
 

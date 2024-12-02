@@ -22,9 +22,11 @@ def rough_pmv_ppd(tdb, v, rh, activity, garments):
     # 计算动态衣服热阻
     clo = clo_dynamic(clo=icl, met=met)  # calculate the dynamic clothing insulation
 
+
     # 计算相对空气速度
     vr = v_relative(v=v, met=met)  # calculate the relative air velocity
 
+    print(f"activity: {activity}, tdb: {tdb}, vr: {vr}, rh: {rh}, met: {met}, clo: {clo}")
     results = pmv_ppd(tdb=tdb, tr=tdb, vr=vr, rh=rh, met=met, clo=clo, standard="ASHRAE")
     return results['pmv'], results['ppd']
 
