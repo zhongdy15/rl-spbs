@@ -96,7 +96,12 @@ def max_colume_irrelevant_group(A, nodes, branches):           # Return colume n
 
 def R_room_occ(min, room):
     if room.history_flag:
-        room.occupant_num = room.occupant_num_data[min+540]
+        if room.use_honeycomb:
+            room.occupant_num = room.occupant_num_data[min+540]
+        else:
+            room.occupant_num = {"sitting": room.sitting_list[min-1],
+                                 "walking": room.walking_list[min-1],
+                                 "standing": room.standing_list[min-1]}
     else:
         room.occupant_num = random.randint(0, 8)
 

@@ -50,19 +50,43 @@ class ZONE():
         self.Qa = 0.
         self.Q_trans = 0.
         # Occupant
-        self.occupant_num = 0
+
         self.occupant_trans = 0
         self.occupant_list = np.zeros(occ_list_length)
         self.occupant_trans_list = np.zeros(occ_list_length)
 
-        self.occupant_num_data = []
-        path = f"SemiPhysBuildingSim/honeycomb_data/room_{self.name[4]}_result.csv"
-        with open(path) as csv_file:
-            csv_reader = csv.reader(csv_file)
-            next(csv_reader)
-            for row in csv_reader:
-                self.occupant_num_data.append(int(row[1]))
+        self.use_honeycomb = False
 
+        if self.use_honeycomb:
+            self.occupant_num = 0
+        else:
+            self.occupant_num = {"sitting": 0, "walking": 0, "standing": 0}
+
+        if self.use_honeycomb:
+            self.occupant_num_data = []
+            path = f"SemiPhysBuildingSim/honeycomb_data/room_{self.name[4]}_result.csv"
+            with open(path) as csv_file:
+                csv_reader = csv.reader(csv_file)
+                next(csv_reader)
+                for row in csv_reader:
+                    self.occupant_num_data.append(int(row[1]))
+        else:
+            # if not use honeycomb, we will use data from human_activity_data.csv
+            sheet_dict = {'room1': 'Sheet1', 'room2': 'Sheet2', 'room3': 'Sheet3', 'room4': 'Sheet1',
+                          'room5': 'Sheet2', 'room6': 'Sheet3', 'room7': 'Sheet1', 'room8': 'Sheet2', }
+
+            path = f"SemiPhysBuildingSim/human_activity_data/final_with_min_sampled_manual.xlsx"
+            # 读取 Excel 文件
+            import pandas as pd
+            df = pd.read_excel(path, sheet_name=sheet_dict[self.name])
+
+            self.sitting_list = df['sitting'].tolist()
+            self.walking_list = df['walking'].tolist()
+            self.standing_list = df['standing'].tolist()
+
+            # # total_occupants = sitting + walking + standing
+            # self.occupant_num_data = [sitting_list[i] + walking_list[i] + standing_list[i] for i in
+            #                          range(len(sitting_list))]
         # Alarm
         self.temp_alarm = 0
         self.RH_alarm = 0
@@ -88,13 +112,17 @@ class ZONE():
         qd = self.qd
         Itd = self.Itd
 
-        self.occupant_trans = self.occupant_num - self.occupant_list[-1]
+        if self.use_honeycomb:
+            occupant_num = self.occupant_num
+        else:
+            occupant_num = sum(self.occupant_num.values())
+        self.occupant_trans = occupant_num - self.occupant_list[-1]
         for o in range(0, len(self.occupant_list)):
             if o < (len(self.occupant_list) - 1):
                 self.occupant_list[o] = self.occupant_list[o+1]
                 self.occupant_trans_list[o] = self.occupant_trans_list[o+1]
             else:
-                self.occupant_list[o] = self.occupant_num
+                self.occupant_list[o] = occupant_num
                 self.occupant_trans_list[o] = self.occupant_trans
 
         self.Qa_0 = c * rou * G_fan/60 * (self.sup_temp - self.temp)
@@ -114,9 +142,9 @@ class ZONE():
         for j in range (0, 4):
             self.Qw += self.wall_area[j] * ((1-WWR)*self.TDeqw[j]*Uw+WWR*self.DT*Uf+WWR*Sc*Itd[min+540][j])
         self.Qe = f * self.Qw
-        # TODO in 11/01:
+        # TODO in 11/01: for human activity
         # 60 * 显热功率替换qp
-        self.Qp = 60 * self.occupant_num * (qp*((37.0 - self.temp)/(37.0 - 24.0)) + qd)
+        self.Qp = 60 * occupant_num * (qp*((37.0 - self.temp)/(37.0 - 24.0)) + qd)
 
         self.Q_load = self.Qe + self.Qp              #  kJ/min
         self.temp += 0.5 * (self.Q_load + self.Qa) / c / self.rou / self.volume
