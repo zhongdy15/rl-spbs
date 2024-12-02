@@ -4,12 +4,12 @@ import time
 
 env_list = ["SemiPhysBuildingSim-v0"]
 time_flag = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
-algo = "a2c"
+algo = "ppo"
 algo_filename = algo + "_" + time_flag
 seed_list = [0,10,20]
 
 env_num = len(env_list)
-gpu_list = [6]
+gpu_list = [4]
 assert len(gpu_list) == env_num, "gpu_setting is incorrect"
 
 for seed in seed_list:

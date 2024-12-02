@@ -186,3 +186,9 @@ Humanoid-v3:
 Swimmer-v3:
   <<: *mujoco-defaults
   gamma: 0.9999
+
+SemiPhysBuildingSim-v0:
+  n_envs: 8
+  n_timesteps: !!float 1e6
+  policy: 'MlpPolicy'
+  ent_coef: 0.0
