@@ -35,7 +35,7 @@ if __name__ == '__main__':
     v = 0.15  # average air speed, [m/s]
     rh = 40  # relative humidity, [%]
     activity_list = ["Seated, quiet", "Filing, standing","Walking 2mph (3.2kmh)"]
-    garments = ["Sweatpants", "T-shirt", "Shoes or sandals"]
+    garments = ["Sweatpants", "T-shirt", "Shoes or sandals","Long sleeve shirt (thin)"]
 
     # 计算PMV和PPD
     all_pmv_list = [[] for _ in range(len(activity_list))]
@@ -58,6 +58,7 @@ if __name__ == '__main__':
     # draw a line for y=-1
     plt.plot(range(tdb_low, tdb_high+1, 1), [-1]*(tdb_high-tdb_low+1), '--', color='gray')
     plt.plot(range(tdb_low, tdb_high + 1, 1), [1] * (tdb_high - tdb_low + 1), '--', color='gray')
+    plt.xticks(range(tdb_low, tdb_high+1, 1))
     # grid on
     plt.grid(True)
     plt.show()
@@ -69,6 +70,7 @@ if __name__ == '__main__':
         plt.legend()
     # draw a line for y=-1
     plt.plot(range(tdb_low, tdb_high + 1, 1), [10] * (tdb_high - tdb_low + 1), '--', color='gray')
+    plt.xticks(range(tdb_low, tdb_high + 1, 1))
     # grid on
     plt.grid(True)
     plt.show()

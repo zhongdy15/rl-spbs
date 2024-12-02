@@ -4,7 +4,7 @@ import time
 
 env_list = ["SemiPhysBuildingSim-v0"]
 time_flag = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
-algo = "dqn"
+algo = "a2c"
 algo_filename = algo + "_" + time_flag
 seed_list = [0,10,20]
 
