@@ -40,6 +40,7 @@ class SemiPhysBuildingSimulation(gym.core.Env):
                            "return_temp",  # FCU 回水温度
                            # "supply_pressure",  # FCU 供水压力
                            # "return_pressure",  # FCU 回水压力
+                           "occupant_num",  # 房间人数
                            ]
 
         self.observation_key_dict = {"sensor_outdoor": ["outdoor_temp"],  # 室外温度
@@ -51,7 +52,9 @@ class SemiPhysBuildingSimulation(gym.core.Env):
                                      "room6": room_state_keys,
                                      "room7": room_state_keys,
                                      }
-        self.observation_space = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(29,), dtype=np.float32)
+        obs_shape = 4*7 + 1 + 3*7
+
+        self.observation_space = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(obs_shape,), dtype=np.float32)
 
         # # Generate framework from hyperparams
         # self.reference_initialize()

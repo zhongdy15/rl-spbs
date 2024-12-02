@@ -243,7 +243,12 @@ def get_latest_observation(data_recorder, key_dict):
         for sub_key in sub_keys:
             # 直接访问嵌套的 key
             if main_key in data_recorder and sub_key in data_recorder[main_key]:
-                latest_data.append(data_recorder[main_key][sub_key][-1])
+                data = data_recorder[main_key][sub_key][-1]
+                if isinstance(data, dict):
+                    for k, v in data.items():
+                        latest_data.append(v)
+                else:
+                    latest_data.append(data)
             else:
                 raise KeyError(f"Key path '{main_key}-{sub_key}' does not exist in data_recorder.")
     # 转换成 numpy array
