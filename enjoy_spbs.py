@@ -12,12 +12,20 @@ model_dict = {"1128_Squared_diff": "logs/dqn_2024-11-28-16-06-02/dqn/SemiPhysBui
               "1128_Baseline_with_energy_constant1e-1":"logs/dqn_2024-11-28-21-50-26/dqn/SemiPhysBuildingSim-v0_1",
               "1128_Baseline_with_energy_constant1e-2":"logs/dqn_2024-11-28-21-51-03/dqn/SemiPhysBuildingSim-v0_1",}
 
-model_key = "1128_Baseline_with_energy_constant1e-2"
+# 扩增了状态空间之后的模型
+model_dict_2 = {"1203_Baseline_with_energy_constant100": "logs/dqn_2024-12-02-20-52-04/dqn/SemiPhysBuildingSim-v0_1",
+                "1203_Baseline_with_energy_constant10": "logs/dqn_2024-12-02-20-52-59/dqn/SemiPhysBuildingSim-v0_1",}
+
+
+model_key = "1203_Baseline_with_energy_constant10"
 print("Loading model: " + model_key)
-model = DQN.load( model_dict[model_key]+"/best_model.zip")
+model = DQN.load( model_dict_2[model_key]+"/best_model.zip")
 
 # 加载环境
 env1 = gym.make("SemiPhysBuildingSim-v0")
+
+print("reward_mode: "+str(env1.reward_mode))
+print("Tradeoff_constant: " + str(env1.tradeoff_constant))
 
 
 for _ in range(1):
