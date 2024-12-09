@@ -194,6 +194,10 @@ def init_data_recorder(data_recorder):
 
     data_recorder["training"] = {
         "reward": [],
+        "temperature_bias": [],
+        "energy_consumption": [],
+        "mean_pmv": [],
+        "mean_ppd": [],
     }
 
 def get_pipenet(G_rec, P, branches, nodes):

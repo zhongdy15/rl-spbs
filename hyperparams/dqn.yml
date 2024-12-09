@@ -82,6 +82,9 @@ Acrobot-v1:
   policy_kwargs: "dict(net_arch=[256, 256])"
 
 SemiPhysBuildingSim-v0:
+  env_wrapper:
+    - rl_zoo3.wrappers.FrameSkip:
+        skip: 20
   n_timesteps: !!float 1e6
   policy: 'MlpPolicy'
   learning_rate: !!float 2.3e-3

@@ -18,7 +18,8 @@ from sympy import Matrix
 class SemiPhysBuildingSimulation(gym.core.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, hyperparams=None, hyperparams_path='SemiPhysBuildingSim/hyperparams/spbs_default.yml'):
+    def __init__(self, hyperparams=None, hyperparams_path='SemiPhysBuildingSim/hyperparams/spbs_default.yml',
+                 reward_mode = "Baseline_OCC_PPD_without_energy", tradeoff_constant = 100):
         # Read from hyperparams or hyperparams_path
         if hyperparams is None:
             with open(hyperparams_path, 'r') as file:
@@ -27,13 +28,16 @@ class SemiPhysBuildingSimulation(gym.core.Env):
         self.hyperparams = hyperparams
 
         # Set the reward mode & trardoff constant for energy consumption
-        self.reward_mode_list = ["Squared_diff",
-                                 "Baseline_without_energy",
+        self.reward_mode_list = ["Baseline_without_energy",
                                  "Baseline_with_energy",
-                                 "Baseline_OCC_PPD",
+                                 "Baseline_OCC_PPD_without_energy",
+                                 "Baseline_OCC_PPD_with_energy",
                                  ]
-        self.reward_mode = "Baseline_OCC_PPD"
-        self.tradeoff_constant = 100  # 10 or 100
+        self.reward_mode = reward_mode
+        self.tradeoff_constant = tradeoff_constant  # 10 or 100
+
+        print("Reward mode: ", self.reward_mode)
+        print("Tradeoff constant: ", self.tradeoff_constant)
 
 
         # Store all the data in this Dict
@@ -405,6 +409,15 @@ class SemiPhysBuildingSimulation(gym.core.Env):
         r = self.get_reward_from_datarecorder()
         save_data(self.data_recorder, table_name="training", data={"reward": r})
 
+        # TODO 8: get the evaluation of the total temperature bias, total energy consumption, mean pmv and mean ppd
+        temperature_bias = self.get_temperature_bias_from_datarecorder()
+        energy_consumption = self.get_energy_consumption_from_datarecorder()
+        mean_pmv, mean_ppd = self.get_pmv_ppd_from_datarecorder()
+        save_data(self.data_recorder, table_name="training", data={"temperature_bias": temperature_bias})
+        save_data(self.data_recorder, table_name="training", data={"energy_consumption": energy_consumption})
+        save_data(self.data_recorder, table_name="training", data={"mean_pmv": mean_pmv})
+        save_data(self.data_recorder, table_name="training", data={"mean_ppd": mean_ppd})
+
         if self.step_min >= self.step_min_bound:
             done = True
 
@@ -696,87 +709,22 @@ class SemiPhysBuildingSimulation(gym.core.Env):
         return observation
 
     def get_reward_from_datarecorder(self):
-        room_temp = get_latest_observation_from_every_room(self.data_recorder,"room_temp")
-
-        reward = -1000
         constant = self.tradeoff_constant
 
-        if self.reward_mode == "Squared_diff":
-            target = 24
-            squared_diff = np.sum((room_temp - target) ** 2)**0.5
-            reward = -squared_diff
-        elif self.reward_mode == "Baseline_without_energy":
-            # Reference: https://ugr-sail.github.io/sinergym/compilation/main/pages/rewards.html
-            T_up = 25
-            T_low = 23
-            r_t = np.abs(room_temp - T_up) + np.abs(room_temp - T_low) - np.abs(T_up - T_low)
-            reward = -np.sum(r_t)
+        if self.reward_mode == "Baseline_without_energy":
+            temperature_bias = self.get_temperature_bias_from_datarecorder()
+            reward = - temperature_bias
         elif self.reward_mode == "Baseline_with_energy":
-            # Reference: https://ugr-sail.github.io/sinergym/compilation/main/pages/rewards.html
-            T_up = 25
-            T_low = 23
-            r_t = np.abs(room_temp - T_up) + np.abs(room_temp - T_low) - np.abs(T_up - T_low)
-            reward_temp = -np.sum(r_t) # 总温度偏差 0- -21左右，每个房间偏1.5度，奖励值-3，总偏差-21
-
-            energy_vec = get_latest_observation_from_every_room(self.data_recorder, "FCU_power")
-            total_energy_consumption = np.sum(energy_vec) # 总能耗 范围：0.0 - 0.096*7即0.0 - 0.672
-
-            reward = reward_temp - constant * total_energy_consumption
-
-        elif self.reward_mode == "Baseline_OCC_PPD":
-            occupant_num_vec = get_latest_observation_from_every_room(self.data_recorder, "occupant_num")
-            # Sitting 1, walking 2, standing 3
-            occupant_activities_num = occupant_num_vec.reshape(7, 3)
-            # print("occupant_num_vec:", occupant_num_vec)
-            # print("occupant_activities_num:", occupant_activities_num)
-
-            # from exp_analysis/pmv_plot1129.py
-
-            # vr_sitting = 0.15 vr_walking = 0.45 vr_standing = 0.27
-            vr_activity = [0.15, 0.45, 0.27]
-            # met_sitting = 1.0 met_walking = 2.0 met_standing = 1.4
-            met_activity = [1.0, 2.0, 1.4]
-            # clo_sitting = 0.63 clo_walking = 0.504 clo_standing = 0.558
-            clo_activity = [0.63, 0.504, 0.558]
-
-            rh = 40  # 湿度
-
-            room_temp = get_latest_observation_from_every_room(self.data_recorder, "room_temp")
-
-            from pythermalcomfort.models import pmv_ppd
-            pmv_matrix = np.zeros_like(occupant_activities_num,dtype=float)
-            ppd_matrix = np.zeros_like(occupant_activities_num,dtype=float)
-
-            # Calculate PMV and PPD for each room and each occupant activity
-            for i in range(7):
-                for j in range(3):
-                    tdb = room_temp[i]
-                    vr = vr_activity[j]
-                    met = met_activity[j]
-                    clo = clo_activity[j]
-                    results = pmv_ppd(tdb=tdb, tr=tdb, vr=vr, rh=rh, met=met, clo=clo, standard="ASHRAE")
-                    pmv_matrix[i][j] = results['pmv']
-                    ppd_matrix[i][j] = results['ppd']
-
-            # print("pmv_matrix:", pmv_matrix)
-            # print("ppd_matrix:", ppd_matrix)
-
-            total_occupant_num = np.sum(occupant_num_vec)
-            total_pmv = np.sum(pmv_matrix * occupant_activities_num)
-            total_ppd = np.sum(ppd_matrix * occupant_activities_num)
-            # print("total_occupant_num:", total_occupant_num)
-            # print("total_pmv:", total_pmv)
-            # print("total_ppd:", total_ppd)
-            # print("oooo")
-            if total_occupant_num == 0:
-                reward_temp = 0.0
-            else:
-                # 平均ppd越小（越接近0）越好，reward越大（越接近0）越好
-                reward_temp = - total_ppd / total_occupant_num
-            reward = reward_temp
-            # energy_vec = get_latest_observation_from_every_room(self.data_recorder, "FCU_power")
-            # total_energy_consumption = np.sum(energy_vec)  # 总能耗 范围：0.0 - 0.096*7即0.0 - 0.672
-            # reward = reward_temp - constant * total_energy_consumption
+            temperature_bias = self.get_temperature_bias_from_datarecorder()
+            energy_consumption = self.get_energy_consumption_from_datarecorder()
+            reward = - temperature_bias - constant * energy_consumption
+        elif self.reward_mode == "Baseline_OCC_PPD_without_energy":
+            mean_ppd = self.get_ppd_from_datarecorder()
+            reward = - mean_ppd
+        elif self.reward_mode == "Baseline_OCC_PPD_with_energy":
+            mean_ppd = self.get_ppd_from_datarecorder()
+            energy_consumption = self.get_energy_consumption_from_datarecorder()
+            reward = - mean_ppd - constant * energy_consumption
 
         return reward
 

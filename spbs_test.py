@@ -1,15 +1,31 @@
 import os
 import time
 
+algo = "dqn"
+seed_list = [0,10,20]
+gpu_list = [1]
+reward_mode = "Baseline_with_energy"
+tradeoff_constant = 100
 
 env_list = ["SemiPhysBuildingSim-v0"]
 time_flag = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
-algo = "dqn"
-algo_filename = algo + "_" + time_flag
-seed_list = [0,10,20]
+
+reward_mode_list = ["Baseline_without_energy",
+                    "Baseline_with_energy",
+                    "Baseline_OCC_PPD_without_energy",
+                    "Baseline_OCC_PPD_with_energy",
+                    ]
+
+
+env_kwargs = f"reward_mode:\"'{reward_mode}'\" tradeoff_constant:{tradeoff_constant}"
+
+
+algo_filename = algo + "_" + reward_mode + \
+                "_" + str(tradeoff_constant) + \
+                "_" +time_flag
 
 env_num = len(env_list)
-gpu_list = [6]
+
 assert len(gpu_list) == env_num, "gpu_setting is incorrect"
 
 for seed in seed_list:
@@ -18,6 +34,7 @@ for seed in seed_list:
                    f"python train.py " \
                    f" --algo {algo} " \
                    f" --env {env_list[env_id]} " \
+                   f" --env-kwargs {env_kwargs} " \
                    f" --seed {seed} " \
                    f" -f logs/{algo_filename}/ " \
                    f" -tb logs/{algo_filename}/tb/ &"

@@ -37,9 +37,9 @@ for _ in range(1):
     while not done:
         # print(str(i) + "th obs: " + str(obs))
         i += 1
-        action = env1.action_space.sample()
-        action = np.array(action)
-        # action , _state = model.predict(obs)
+        # action = env1.action_space.sample()
+        # action = np.array(action)
+        action , _state = model.predict(obs)
         action_list.append(action)
         # print(action_list)
         obs, r, done, info = env1.step(action)
