@@ -3,7 +3,7 @@ import time
 
 algo = "dqn"
 seed_list = [0,10,20]
-gpu_list = [1]
+gpu_list = [3]
 reward_mode = "Baseline_with_energy"
 tradeoff_constant = 100
 

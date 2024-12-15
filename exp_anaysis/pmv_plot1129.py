@@ -26,14 +26,20 @@ def rough_pmv_ppd(tdb, v, rh, activity, garments):
     # 计算相对空气速度
     vr = v_relative(v=v, met=met)  # calculate the relative air velocity
 
-    print(f"activity: {activity}, tdb: {tdb}, vr: {vr}, rh: {rh}, met: {met}, clo: {clo}")
+
     results = pmv_ppd(tdb=tdb, tr=tdb, vr=vr, rh=rh, met=met, clo=clo, standard="ASHRAE")
+    print(results)
+    if results['pmv'] is np.nan:
+        print(f"activity: {activity}, tdb: {tdb}, vr: {vr}, rh: {rh}, met: {met}, clo: {clo}")
+        print(results)
     return results['pmv'], results['ppd']
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
-    tdb_low = 15
-    tdb_high = 35
+    import numpy as np
+    tdb_low = 10
+    tdb_high = 40
+    interval = 0.1
     v = 0.15  # average air speed, [m/s]
     rh = 40  # relative humidity, [%]
     activity_list = ["Seated, quiet", "Filing, standing","Walking 2mph (3.2kmh)"]
@@ -46,33 +52,33 @@ if __name__ == '__main__':
         activity = activity_list[i]
         pmv_list = all_pmv_list[i]
         ppd_list = all_ppd_list[i]
-        for tdb in range(tdb_low, tdb_high+1, 1):
+        for tdb in np.arange(tdb_low, tdb_high + interval, interval):
             pmv, ppd = rough_pmv_ppd(tdb=tdb, v=v, rh=rh, activity=activity, garments=garments)
             pmv_list.append(pmv)
             ppd_list.append(ppd)
 
     # ploting the PMV curve for each activity
     for i in range(len(activity_list)):
-        plt.plot(range(tdb_low, tdb_high+1, 1), all_pmv_list[i], label=activity_list[i])
+        plt.plot(np.arange(tdb_low, tdb_high + interval, interval), all_pmv_list[i], label=activity_list[i])
         plt.xlabel('Dry bulb air temperature [$^{\circ}$C]')
         plt.ylabel('PMV')
         plt.legend()
     # draw a line for y=-1
-    plt.plot(range(tdb_low, tdb_high+1, 1), [-1]*(tdb_high-tdb_low+1), '--', color='gray')
-    plt.plot(range(tdb_low, tdb_high + 1, 1), [1] * (tdb_high - tdb_low + 1), '--', color='gray')
-    plt.xticks(range(tdb_low, tdb_high+1, 1))
+    plt.plot(np.arange(tdb_low, tdb_high + interval, interval), [-1]*len(np.arange(tdb_low, tdb_high + interval, interval)), '--', color='gray')
+    plt.plot(np.arange(tdb_low, tdb_high + interval, interval), [1] * len(np.arange(tdb_low, tdb_high + interval, interval)), '--', color='gray')
+    # plt.xticks(np.arange(tdb_low, tdb_high + interval, interval))
     # grid on
     plt.grid(True)
     plt.show()
     # ploting the PPD curve for each activity
     for i in range(len(activity_list)):
-        plt.plot(range(tdb_low, tdb_high+1, 1), all_ppd_list[i], label=activity_list[i])
+        plt.plot(np.arange(tdb_low, tdb_high + interval, interval), all_ppd_list[i], label=activity_list[i])
         plt.xlabel('Dry bulb air temperature [$^{\circ}$C]')
         plt.ylabel('PPD')
         plt.legend()
     # draw a line for y=-1
-    plt.plot(range(tdb_low, tdb_high + 1, 1), [10] * (tdb_high - tdb_low + 1), '--', color='gray')
-    plt.xticks(range(tdb_low, tdb_high + 1, 1))
+    plt.plot(np.arange(tdb_low, tdb_high + interval, interval), [10] * len(np.arange(tdb_low, tdb_high + interval, interval)), '--', color='gray')
+    # plt.xticks(np.arange(tdb_low, tdb_high + interval, interval))
     # grid on
     plt.grid(True)
     plt.show()

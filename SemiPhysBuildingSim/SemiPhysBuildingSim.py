@@ -18,14 +18,20 @@ from sympy import Matrix
 class SemiPhysBuildingSimulation(gym.core.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, hyperparams=None, hyperparams_path='SemiPhysBuildingSim/hyperparams/spbs_default.yml',
-                 reward_mode = "Baseline_OCC_PPD_without_energy", tradeoff_constant = 100):
+    def __init__(self,
+                 hyperparams=None,
+                 hyperparams_path='SemiPhysBuildingSim/hyperparams/spbs_default.yml',
+                 reward_mode = "Baseline_OCC_PPD_without_energy",
+                 tradeoff_constant = 100,
+                 eval_mode=False,):
         # Read from hyperparams or hyperparams_path
         if hyperparams is None:
             with open(hyperparams_path, 'r') as file:
                 default_hyperparams = EasyDict(yaml.safe_load(file))
             hyperparams = convert_lists_to_np_arrays(params=default_hyperparams)
         self.hyperparams = hyperparams
+
+        self.eval_mode = eval_mode
 
         # Set the reward mode & trardoff constant for energy consumption
         self.reward_mode_list = ["Baseline_without_energy",
@@ -410,13 +416,14 @@ class SemiPhysBuildingSimulation(gym.core.Env):
         save_data(self.data_recorder, table_name="training", data={"reward": r})
 
         # TODO 8: get the evaluation of the total temperature bias, total energy consumption, mean pmv and mean ppd
-        temperature_bias = self.get_temperature_bias_from_datarecorder()
-        energy_consumption = self.get_energy_consumption_from_datarecorder()
-        mean_pmv, mean_ppd = self.get_pmv_ppd_from_datarecorder()
-        save_data(self.data_recorder, table_name="training", data={"temperature_bias": temperature_bias})
-        save_data(self.data_recorder, table_name="training", data={"energy_consumption": energy_consumption})
-        save_data(self.data_recorder, table_name="training", data={"mean_pmv": mean_pmv})
-        save_data(self.data_recorder, table_name="training", data={"mean_ppd": mean_ppd})
+        if self.eval_mode:
+            temperature_bias = self.get_temperature_bias_from_datarecorder()
+            energy_consumption = self.get_energy_consumption_from_datarecorder()
+            mean_pmv, mean_ppd = self.get_pmv_ppd_from_datarecorder()
+            save_data(self.data_recorder, table_name="training", data={"temperature_bias": temperature_bias})
+            save_data(self.data_recorder, table_name="training", data={"energy_consumption": energy_consumption})
+            save_data(self.data_recorder, table_name="training", data={"mean_pmv": mean_pmv})
+            save_data(self.data_recorder, table_name="training", data={"mean_ppd": mean_ppd})
 
         if self.step_min >= self.step_min_bound:
             done = True
@@ -753,6 +760,9 @@ class SemiPhysBuildingSimulation(gym.core.Env):
         clo_activity = [0.63, 0.504, 0.558]
         # 湿度
         rh = 40
+        # 温度上下限，避免仿真器的问题
+        tdb_up_bound = 40
+        tdb_low_bound = 10
 
         occupant_num_vec = get_latest_observation_from_every_room(self.data_recorder, "occupant_num")
         occupant_activities_num = occupant_num_vec.reshape(7, 3)
@@ -766,7 +776,7 @@ class SemiPhysBuildingSimulation(gym.core.Env):
         # Calculate PMV and PPD for each room and each occupant activity
         for i in range(7):
             for j in range(3):
-                tdb = room_temp[i]
+                tdb = np.clip(room_temp[i], tdb_low_bound, tdb_up_bound)
                 vr = vr_activity[j]
                 met = met_activity[j]
                 clo = clo_activity[j]
