@@ -10,9 +10,15 @@ from .common.utils import convert_lists_to_np_arrays, sign, max_colume_irrelevan
 import yaml
 import csv
 from .common.mz_model import ZONE, FCU, PUMP, HEATPUMP
-from .common.action_transformation import available_action_set, create_action_space, \
-    map_action_to_controls, map_controls_to_action
 from sympy import Matrix
+
+USE_Multi_Discrete = True
+if USE_Multi_Discrete:
+    from .common.action_transformation_multi_discrete import available_action_set, create_action_space, \
+        map_action_to_controls, map_controls_to_action
+else:
+    from .common.action_transformation import available_action_set, create_action_space, \
+        map_action_to_controls, map_controls_to_action
 
 
 class SemiPhysBuildingSimulation(gym.core.Env):
