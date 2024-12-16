@@ -28,10 +28,10 @@ def rough_pmv_ppd(tdb, v, rh, activity, garments):
 
 
     results = pmv_ppd(tdb=tdb, tr=tdb, vr=vr, rh=rh, met=met, clo=clo, standard="ASHRAE")
-    print(results)
-    if results['pmv'] is np.nan:
-        print(f"activity: {activity}, tdb: {tdb}, vr: {vr}, rh: {rh}, met: {met}, clo: {clo}")
-        print(results)
+    # print(results)
+    # if results['pmv'] is np.nan:
+    #     print(f"activity: {activity}, tdb: {tdb}, vr: {vr}, rh: {rh}, met: {met}, clo: {clo}")
+    #     print(results)
     return results['pmv'], results['ppd']
 
 if __name__ == '__main__':

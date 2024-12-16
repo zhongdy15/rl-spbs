@@ -761,7 +761,7 @@ class SemiPhysBuildingSimulation(gym.core.Env):
         # 湿度
         rh = 40
         # 温度上下限，避免仿真器的问题
-        tdb_up_bound = 40
+        tdb_up_bound = 38
         tdb_low_bound = 10
 
         occupant_num_vec = get_latest_observation_from_every_room(self.data_recorder, "occupant_num")

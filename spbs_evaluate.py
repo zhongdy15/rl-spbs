@@ -16,24 +16,16 @@ model_dict_2 = {"1203_Baseline_with_energy_constant100": "logs/dqn_2024-12-02-20
                 "1210_Baseline_with_energy_constant10_skip10" : "logs/dqn_Baseline_with_energy_10_2024-12-09-18-29-45/dqn/SemiPhysBuildingSim-v0_1",
                 "1210_Baseline_with_energy_constant100_skip10" : "logs/dqn_Baseline_with_energy_100_2024-12-09-18-30-27/dqn/SemiPhysBuildingSim-v0_1",
                 "1210_Baseline_with_energy_constant10_skip20" : "logs/dqn_Baseline_with_energy_10_2024-12-09-18-31-42/dqn/SemiPhysBuildingSim-v0_1",
-                "1210_Baseline_with_energy_constant100_skip20" : "logs/dqn_Baseline_with_energy_100_2024-12-09-18-32-50/dqn/SemiPhysBuildingSim-v0_1",}
+                "1210_Baseline_with_energy_constant100_skip20" : "logs/dqn_Baseline_with_energy_100_2024-12-09-18-32-50/dqn/SemiPhysBuildingSim-v0_1",
+                "1216_Baseline_with_energy_constant100_skip5" : "logs/dqn_Baseline_with_energy_100_2024-12-15-15-14-52/dqn/SemiPhysBuildingSim-v0_1"}
 
 reward_mode_list = ["Baseline_without_energy",
                     "Baseline_with_energy",
                     "Baseline_OCC_PPD_without_energy",
                     "Baseline_OCC_PPD_with_energy",]
 
-test_model_key_list = [
-                       "1210_Baseline_with_energy_constant10_skip1",
-                       "1210_Baseline_with_energy_constant100_skip1",
-                       "1210_Baseline_with_energy_constant10_skip5",
-                       "1210_Baseline_with_energy_constant100_skip5",
-                       "1210_Baseline_with_energy_constant10_skip10",
-                       "1210_Baseline_with_energy_constant100_skip10",
-                       "1210_Baseline_with_energy_constant10_skip20",
-                       "1210_Baseline_with_energy_constant100_skip20"
-                       ]
-save_folder = "figure/1210_test"
+test_model_key_list = ["1216_Baseline_with_energy_constant100_skip5"]
+save_folder = "figure/1216_test"
 
 
 if not os.path.exists(save_folder):
