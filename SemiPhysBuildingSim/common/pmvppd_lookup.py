@@ -61,8 +61,13 @@ if __name__ == '__main__':
     tdb_values = lookup.tdb_range
 
     for i, activity in enumerate(["Sitting", "Walking", "Standing"]):
-        pmv_values = lookup.pmv_table[i]
-        ppd_values = lookup.ppd_table[i]
+        # pmv_values = lookup.pmv_table[i]
+        # ppd_values = lookup.ppd_table[i]
+        pmv_values, ppd_values = [], []
+        for tdb in tdb_values:
+            pmv, ppd = lookup.query(tdb, i)
+            pmv_values.append(pmv)
+            ppd_values.append(ppd)
 
         plt.subplot(1, 2, 1)
         plt.plot(tdb_values, pmv_values,
