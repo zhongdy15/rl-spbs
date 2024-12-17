@@ -1,10 +1,10 @@
 import os
 import time
 
-algo = "dqn"
+algo = "a2c"
 seed_list = [0,10,20]
-gpu_list = [0]
-reward_mode = "Baseline_OCC_PPD_with_energy"
+gpu_list = [6]
+reward_mode = "Baseline_with_energy"
 tradeoff_constant = 0
 
 env_list = ["SemiPhysBuildingSim-v0"]
