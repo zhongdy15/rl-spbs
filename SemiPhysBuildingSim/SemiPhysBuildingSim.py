@@ -12,7 +12,7 @@ import csv
 from .common.mz_model import ZONE, FCU, PUMP, HEATPUMP
 from sympy import Matrix
 
-USE_Multi_Discrete = False
+USE_Multi_Discrete = True
 if USE_Multi_Discrete:
     from .common.action_transformation_multi_discrete import available_action_set, create_action_space, \
         map_action_to_controls, map_controls_to_action
@@ -20,6 +20,7 @@ else:
     from .common.action_transformation import available_action_set, create_action_space, \
         map_action_to_controls, map_controls_to_action
 
+from .common.pmvppd_lookup import SimplifiedPMVPPDLookup
 
 class SemiPhysBuildingSimulation(gym.core.Env):
     metadata = {'render.modes': ['human']}
@@ -756,39 +757,33 @@ class SemiPhysBuildingSimulation(gym.core.Env):
         return total_energy_consumption
 
     def get_pmv_ppd_from_datarecorder(self):
-        # Sitting 1, walking 2, standing 3
-
-        # vr_sitting = 0.15 vr_walking = 0.45 vr_standing = 0.27
-        vr_activity = [0.15, 0.45, 0.27]
-        # met_sitting = 1.0 met_walking = 2.0 met_standing = 1.4
-        met_activity = [1.0, 2.0, 1.4]
-        # clo_sitting = 0.63 clo_walking = 0.504 clo_standing = 0.558
-        clo_activity = [0.63, 0.504, 0.558]
-        # 湿度
-        rh = 40
-        # 温度上下限，避免仿真器的问题
-        tdb_up_bound = 38
-        tdb_low_bound = 10
+        # 判断self是否包含pmvppd_lookup，如果没有，则构造
+        if not hasattr(self, 'pmvppd_lookup'):
+            self.construct_pmvppd_lookup()
 
         occupant_num_vec = get_latest_observation_from_every_room(self.data_recorder, "occupant_num")
         occupant_activities_num = occupant_num_vec.reshape(7, 3)
 
         room_temp = get_latest_observation_from_every_room(self.data_recorder, "room_temp")
 
-        from pythermalcomfort.models import pmv_ppd
+        # from pythermalcomfort.models import pmv_ppd
         pmv_matrix = np.zeros_like(occupant_activities_num, dtype=float)
         ppd_matrix = np.zeros_like(occupant_activities_num, dtype=float)
 
         # Calculate PMV and PPD for each room and each occupant activity
         for i in range(7):
             for j in range(3):
-                tdb = np.clip(room_temp[i], tdb_low_bound, tdb_up_bound)
-                vr = vr_activity[j]
-                met = met_activity[j]
-                clo = clo_activity[j]
-                results = pmv_ppd(tdb=tdb, tr=tdb, vr=vr, rh=rh, met=met, clo=clo, standard="ASHRAE")
-                pmv_matrix[i][j] = results['pmv']
-                ppd_matrix[i][j] = results['ppd']
+                tdb = room_temp[i]
+                # vr = vr_activity[j]
+                # met = met_activity[j]
+                # clo = clo_activity[j]
+                # results = pmv_ppd(tdb=tdb, tr=tdb, vr=vr, rh=rh, met=met, clo=clo, standard="ASHRAE")
+                # pmv_matrix[i][j] = results['pmv']
+                # ppd_matrix[i][j] = results['ppd']
+
+                pmv, ppd = self.pmvppd_lookup.query(tdb, j)
+                pmv_matrix[i][j] = pmv
+                ppd_matrix[i][j] = ppd
 
         total_occupant_num = np.sum(occupant_num_vec)
 
@@ -816,6 +811,29 @@ class SemiPhysBuildingSimulation(gym.core.Env):
     def get_ppd_from_datarecorder(self):
         _, mean_ppd = self.get_pmv_ppd_from_datarecorder()
         return mean_ppd
+
+    def construct_pmvppd_lookup(self):
+        # 构造PMV-PPD lookup表
+        # Sitting 1, walking 2, standing 3
+
+        # vr_sitting = 0.15 vr_walking = 0.45 vr_standing = 0.27
+        vr_activity = [0.15, 0.45, 0.27]
+        # met_sitting = 1.0 met_walking = 2.0 met_standing = 1.4
+        met_activity = [1.0, 2.0, 1.4]
+        # clo_sitting = 0.63 clo_walking = 0.504 clo_standing = 0.558
+        clo_activity = [0.63, 0.504, 0.558]
+        # 湿度
+        rh = 40
+        # 温度上下限，避免仿真器的问题
+        tdb_up_bound = 38
+        tdb_low_bound = 10
+
+        self.pmvppd_lookup = SimplifiedPMVPPDLookup(tdb_low_bound=tdb_low_bound,
+                                                    tdb_up_bound=tdb_up_bound,
+                                                    vr_activity=vr_activity,
+                                                    met_activity=met_activity,
+                                                    clo_activity=clo_activity,
+                                                    rh=rh)
 
 
 if __name__ == "__main__":

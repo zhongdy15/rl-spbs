@@ -22,19 +22,22 @@ model_dict_2 = {"1203_Baseline_with_energy_constant100": "logs/dqn_2024-12-02-20
                 "1216_Baseline_OCC_PPD_with_energy_constant10_skip5": "logs/dqn_Baseline_OCC_PPD_with_energy_10_2024-12-16-10-02-57/dqn/SemiPhysBuildingSim-v0_1",
                 "1216_Baseline_OCC_PPD_with_energy_constant1_skip5": "logs/dqn_Baseline_OCC_PPD_with_energy_1_2024-12-16-10-02-29/dqn/SemiPhysBuildingSim-v0_1",
                 "1216_Baseline_OCC_PPD_with_energy_constant0.1_skip5": "logs/dqn_Baseline_OCC_PPD_with_energy_0.1_2024-12-16-10-01-49/dqn/SemiPhysBuildingSim-v0_1",
-                "1216_Baseline_OCC_PPD_with_energy_constant0_skip5": "logs/dqn_Baseline_OCC_PPD_with_energy_0_2024-12-16-09-58-51/dqn/SemiPhysBuildingSim-v0_1"}
+                "1216_Baseline_OCC_PPD_with_energy_constant0_skip5": "logs/dqn_Baseline_OCC_PPD_with_energy_0_2024-12-16-09-58-51/dqn/SemiPhysBuildingSim-v0_1",
+                "1217_Baseline_OCC_PPD_with_energy_constant1000_skip5":"logs/dqn_Baseline_OCC_PPD_with_energy_1000_2024-12-17-12-24-40/dqn/SemiPhysBuildingSim-v0_1",
+                "1217_Baseline_OCC_PPD_with_energy_constant100_skip5":"logs/dqn_Baseline_OCC_PPD_with_energy_100_2024-12-17-12-26-06/dqn/SemiPhysBuildingSim-v0_1",
+                "1217_Baseline_OCC_PPD_with_energy_constant10_skip5":"logs/dqn_Baseline_OCC_PPD_with_energy_10_2024-12-17-12-26-29/dqn/SemiPhysBuildingSim-v0_1",
+                "1217_Baseline_OCC_PPD_with_energy_constant0_skip5":"logs/dqn_Baseline_OCC_PPD_with_energy_0_2024-12-17-12-27-04/dqn/SemiPhysBuildingSim-v0_1",}
 
 reward_mode_list = ["Baseline_without_energy",
                     "Baseline_with_energy",
                     "Baseline_OCC_PPD_without_energy",
                     "Baseline_OCC_PPD_with_energy",]
 
-test_model_key_list = ["1216_Baseline_OCC_PPD_with_energy_constant100_skip5",
-                       "1216_Baseline_OCC_PPD_with_energy_constant10_skip5",
-                       "1216_Baseline_OCC_PPD_with_energy_constant1_skip5",
-                       "1216_Baseline_OCC_PPD_with_energy_constant0.1_skip5",
-                        "1216_Baseline_OCC_PPD_with_energy_constant0_skip5"]
-save_folder = "figure/1216_OCCPPD"
+test_model_key_list = ["1217_Baseline_OCC_PPD_with_energy_constant1000_skip5",
+                        "1217_Baseline_OCC_PPD_with_energy_constant100_skip5",
+                        "1217_Baseline_OCC_PPD_with_energy_constant10_skip5",
+                        "1217_Baseline_OCC_PPD_with_energy_constant0_skip5",]
+save_folder = "figure/1217_OCCPPD_lookup"
 
 
 if not os.path.exists(save_folder):
