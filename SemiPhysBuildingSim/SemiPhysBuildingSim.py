@@ -61,6 +61,7 @@ class SemiPhysBuildingSimulation(gym.core.Env):
         # self.action_dict_space = action_dict_space()
         self.available_action_set = available_action_set()
         self.action_space = create_action_space(action_set=self.available_action_set)
+        print("Action space: ", self.action_space)
 
         room_state_keys = ["room_temp",  # 房间温度
                            "FCU_fan_feedback",  # FCU 挡位
