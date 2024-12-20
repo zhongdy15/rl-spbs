@@ -1,5 +1,4 @@
 import torch as th
-from gym import spaces
 from torch import nn
 
 import warnings
@@ -20,9 +19,9 @@ from stable_baselines3.dqn.policies import CnnPolicy, DQNPolicy, MlpPolicy, Mult
 from stable_baselines3.dqn import DQN
 from bdq.policies import BDQPolicy
 
-SelfDQN = TypeVar("SelfBDQ", bound="BDQ")
+SelfBDQ = TypeVar("SelfBDQ", bound="BDQ")
 
-class BDQ(DQN):
+class BDQ(OffPolicyAlgorithm):
     """
     Branching Dueling Q-Network(BDQ)
     pape: https://arxiv.org/abs/1711.08946
@@ -102,7 +101,6 @@ class BDQ(DQN):
         device: Union[th.device, str] = "auto",
         _init_setup_model: bool = True,
     ):
-
         super().__init__(
             policy,
             env,
@@ -114,23 +112,78 @@ class BDQ(DQN):
             gamma,
             train_freq,
             gradient_steps,
-            replay_buffer_class,
-            replay_buffer_kwargs,
-            optimize_memory_usage,
-            target_update_interval,
-            exploration_fraction,
-            exploration_initial_eps,
-            exploration_final_eps,
-            max_grad_norm,
-            tensorboard_log,
-            policy_kwargs,
-            verbose,
-            seed,
-            device,
-            _init_setup_model,
+            action_noise=None,  # No action noise
+            replay_buffer_class=replay_buffer_class,
+            replay_buffer_kwargs=replay_buffer_kwargs,
+            policy_kwargs=policy_kwargs,
+            tensorboard_log=tensorboard_log,
+            verbose=verbose,
+            device=device,
+            seed=seed,
+            sde_support=False,
+            optimize_memory_usage=optimize_memory_usage,
+            supported_action_spaces=(spaces.Discrete,),
+            support_multi_env=True,
         )
 
+        self.exploration_initial_eps = exploration_initial_eps
+        self.exploration_final_eps = exploration_final_eps
+        self.exploration_fraction = exploration_fraction
+        self.target_update_interval = target_update_interval
+        # For updating the target network with multiple envs:
+        self._n_calls = 0
+        self.max_grad_norm = max_grad_norm
+        # "epsilon" for the epsilon-greedy exploration
+        self.exploration_rate = 0.0
+        # Linear schedule will be defined in `_setup_model()`
+        self.exploration_schedule = None
+        self.q_net, self.q_net_target = None, None
+
+        if _init_setup_model:
+            self._setup_model()
         print("Creating BDQ agent")
+
+    def _setup_model(self) -> None:
+        super()._setup_model()
+        self._create_aliases()
+        # Copy running stats, see GH issue #996
+        self.batch_norm_stats = get_parameters_by_name(self.q_net, ["running_"])
+        self.batch_norm_stats_target = get_parameters_by_name(self.q_net_target, ["running_"])
+        self.exploration_schedule = get_linear_fn(
+            self.exploration_initial_eps,
+            self.exploration_final_eps,
+            self.exploration_fraction,
+        )
+        # Account for multiple environments
+        # each call to step() corresponds to n_envs transitions
+        if self.n_envs > 1:
+            if self.n_envs > self.target_update_interval:
+                warnings.warn(
+                    "The number of environments used is greater than the target network "
+                    f"update interval ({self.n_envs} > {self.target_update_interval}), "
+                    "therefore the target network will be updated after each call to env.step() "
+                    f"which corresponds to {self.n_envs} steps."
+                )
+
+            self.target_update_interval = max(self.target_update_interval // self.n_envs, 1)
+
+    def _create_aliases(self) -> None:
+        self.q_net = self.policy.q_net
+        self.q_net_target = self.policy.q_net_target
+
+    def _on_step(self) -> None:
+        """
+        Update the exploration rate and target network if needed.
+        This method is called in ``collect_rollouts()`` after each step in the environment.
+        """
+        self._n_calls += 1
+        if self._n_calls % self.target_update_interval == 0:
+            polyak_update(self.q_net.parameters(), self.q_net_target.parameters(), self.tau)
+            # Copy running stats, see GH issue #996
+            polyak_update(self.batch_norm_stats, self.batch_norm_stats_target, 1.0)
+
+        self.exploration_rate = self.exploration_schedule(self._current_progress_remaining)
+        self.logger.record("rollout/exploration_rate", self.exploration_rate)
 
     def train(self, gradient_steps: int, batch_size: int = 100) -> None:
         # Switch to train mode (this affects batch norm / dropout)
@@ -207,14 +260,14 @@ class BDQ(DQN):
         return action, state
 
     def learn(
-        self: SelfDQN,
+        self: SelfBDQ,
         total_timesteps: int,
         callback: MaybeCallback = None,
         log_interval: int = 4,
         tb_log_name: str = "BDQ",
         reset_num_timesteps: bool = True,
         progress_bar: bool = False,
-    ) -> SelfDQN:
+    ) -> SelfBDQ:
 
         return super().learn(
             total_timesteps=total_timesteps,
@@ -224,3 +277,11 @@ class BDQ(DQN):
             reset_num_timesteps=reset_num_timesteps,
             progress_bar=progress_bar,
         )
+
+    def _excluded_save_params(self) -> List[str]:
+        return super()._excluded_save_params() + ["q_net", "q_net_target"]
+
+    def _get_torch_save_params(self) -> Tuple[List[str], List[str]]:
+        state_dicts = ["policy", "policy.optimizer"]
+
+        return state_dicts, []

@@ -3,7 +3,7 @@ import time
 
 algo = "bdq"
 seed_list = [0,10,20]
-gpu_list = [6]
+gpu_list = [7]
 reward_mode = "Baseline_with_energy"
 tradeoff_constant = 0
 
