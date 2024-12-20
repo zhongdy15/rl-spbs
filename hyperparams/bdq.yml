@@ -2,7 +2,7 @@ SemiPhysBuildingSim-v0:
   env_wrapper:
     - rl_zoo3.wrappers.FrameSkip:
         skip: 1
-  n_timesteps: !!float 2e5
+  n_timesteps: !!float 1e6
   policy: 'MlpPolicy'
   learning_rate: !!float 2.3e-3
   batch_size: 64
