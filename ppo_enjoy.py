@@ -10,7 +10,16 @@ import os
 model_dict_2 = {"1219_PPO_OCC_const100": "logs/ppo_Baseline_OCC_PPD_with_energy_100_2024-12-18-12-52-54/ppo/SemiPhysBuildingSim-v0_1",
                 "1219_PPO_OCC_const10":"logs/ppo_Baseline_OCC_PPD_with_energy_10_2024-12-18-12-52-11/ppo/SemiPhysBuildingSim-v0_1",
                 "1219_A2C_OCC_const100":"logs/a2c_Baseline_OCC_PPD_with_energy_100_2024-12-18-12-50-57/a2c/SemiPhysBuildingSim-v0_1",
-                "1219_A2C_OCC_const10":"logs/a2c_Baseline_OCC_PPD_with_energy_10_2024-12-18-12-36-27/a2c/SemiPhysBuildingSim-v0_1"}
+                "1219_A2C_OCC_const10":"logs/a2c_Baseline_OCC_PPD_with_energy_10_2024-12-18-12-36-27/a2c/SemiPhysBuildingSim-v0_1",
+                "1219_PPO_baseline_const100":"logs/ppo_Baseline_with_energy_100_2024-12-19-10-49-14/ppo/SemiPhysBuildingSim-v0_1",
+                "1219_PPO_baseline_const10":"logs/ppo_Baseline_with_energy_10_2024-12-19-10-50-18/ppo/SemiPhysBuildingSim-v0_1",
+                "1219_PPO_baseline_const0":"logs/ppo_Baseline_with_energy_0_2024-12-19-10-50-52/ppo/SemiPhysBuildingSim-v0_1",
+                "1219_PPO_baseline_const100_4levels":"logs/ppo_Baseline_with_energy_100_2024-12-19-10-53-48/ppo/SemiPhysBuildingSim-v0_1",
+                "1219_PPO_baseline_const10_4levels":"logs/ppo_Baseline_with_energy_10_2024-12-19-10-54-47/ppo/SemiPhysBuildingSim-v0_1",
+                "1219_PPO_baseline_const0_4levels":"logs/ppo_Baseline_with_energy_0_2024-12-19-10-55-34/ppo/SemiPhysBuildingSim-v0_1",
+                "1219_PPO_OCC_const100_4levels":"logs/ppo_Baseline_OCC_PPD_with_energy_100_2024-12-19-10-56-42/ppo/SemiPhysBuildingSim-v0_1",
+                "1219_PPO_OCC_const10_4levels":"logs/ppo_Baseline_OCC_PPD_with_energy_10_2024-12-19-10-57-15/ppo/SemiPhysBuildingSim-v0_1",
+                "1219_PPO_OCC_const0_4levels":"logs/ppo_Baseline_OCC_PPD_with_energy_0_2024-12-19-10-57-55/ppo/SemiPhysBuildingSim-v0_1"}
 
 reward_mode_list = ["Baseline_without_energy",
                     "Baseline_with_energy",
@@ -19,13 +28,19 @@ reward_mode_list = ["Baseline_without_energy",
 
 algo_dict = {"ppo": PPO, "a2c": A2C, "dqn": DQN}
 
-test_model_key_list = ["1219_PPO_OCC_const100",
-                        "1219_PPO_OCC_const10",
-                        "1219_A2C_OCC_const100",
-                        "1219_A2C_OCC_const10",]
+# test_model_key_list = ["1219_PPO_baseline_const100",
+#                        "1219_PPO_baseline_const10",
+#                        "1219_PPO_baseline_const0"]
+
+test_model_key_list = ["1219_PPO_baseline_const100_4levels",
+                       "1219_PPO_baseline_const10_4levels",
+                       "1219_PPO_baseline_const0_4levels",
+                       "1219_PPO_OCC_const100_4levels",
+                       "1219_PPO_OCC_const10_4levels",
+                       "1219_PPO_OCC_const0_4levels"]
 
 
-save_folder = "figure/1219_OCC_A2CPPO"
+save_folder = "figure/1219_bangbangvs4levels/four_levels/"
 
 
 if not os.path.exists(save_folder):

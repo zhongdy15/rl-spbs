@@ -13,7 +13,7 @@ def available_action_set():
             "roomtemp_setpoint": {24}, #
             "roomRH_setpoint": {70},# 固定70
             "FCU_onoff_setpoint": {1}, # 选{0，1}最简单控制
-            "FCU_fan_setpoint": {0,1,2,3}, # 选{1，2，3}低中高档
+            "FCU_fan_setpoint": {0,1,2,3}, #{0,3}, #{0,1,2,3}, # 选{1，2，3}低中高档
             "FCU_workingmode_setpoint": {1},
             "valve_setpoint": {100},# 固定100
         }
