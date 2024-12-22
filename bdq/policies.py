@@ -52,9 +52,19 @@ class BDQNetwork(BasePolicy):
         self.activation_fn = activation_fn
         self.features_extractor = features_extractor
         self.features_dim = features_dim
-        action_dim = self.action_space.n  # number of actions
-        q_net = create_mlp(self.features_dim, action_dim, self.net_arch, self.activation_fn)
-        self.q_net = nn.Sequential(*q_net)
+
+        action_nvec = self.action_space.nvec
+        # Dueling Q-Network
+        # reference: https://github.com/MoMe36/BranchingDQN/blob/master/model.py
+        shared_reprentation = create_mlp(self.features_dim, -1, self.net_arch, self.activation_fn)
+        self.shared_reprentation = nn.Sequential(*shared_reprentation)
+
+        self.value_head = nn.Linear(self.net_arch[-1], 1)
+        self.adv_heads = nn.ModuleList([nn.Linear(self.net_arch[-1], ac_dim) for ac_dim in action_nvec])
+
+        # action_dim = self.action_space.n  # number of actions
+        # q_net = create_mlp(self.features_dim, action_dim, self.net_arch, self.activation_fn)
+        # self.q_net = nn.Sequential(*q_net)
 
     def forward(self, obs: th.Tensor) -> th.Tensor:
         """
@@ -63,12 +73,28 @@ class BDQNetwork(BasePolicy):
         :param obs: Observation
         :return: The estimated Q-Value for each action.
         """
-        return self.q_net(self.extract_features(obs, self.features_extractor))
+        # return self.q_net(self.extract_features(obs, self.features_extractor))
+        out = self.shared_reprentation(self.extract_features(obs, self.features_extractor))
+        value = self.value_head(out)
+        advs = th.stack([l(out) for l in self.adv_heads], dim=1)
+
+        # print(advs.shape)
+        # print(advs.mean(2).shape)
+        test = advs.mean(2, keepdim=True)
+        # input(test.shape)
+        q_val = value.unsqueeze(2) + advs - advs.mean(2, keepdim=True)
+        # input(q_val.shape)
+
+        return q_val
+
 
     def _predict(self, observation: th.Tensor, deterministic: bool = True) -> th.Tensor:
-        q_values = self(observation)
-        # Greedy action
-        action = q_values.argmax(dim=1).reshape(-1)
+        # q_values = self(observation)
+        # # Greedy action
+        # action = q_values.argmax(dim=1).reshape(-1)
+
+        q_values = self(observation).squeeze(0)
+        action = th.argmax(q_values, dim=1)
         return action
 
     def _get_constructor_parameters(self) -> Dict[str, Any]:

@@ -122,7 +122,7 @@ class BDQ(OffPolicyAlgorithm):
             seed=seed,
             sde_support=False,
             optimize_memory_usage=optimize_memory_usage,
-            supported_action_spaces=(spaces.Discrete,),
+            supported_action_spaces=(spaces.MultiDiscrete,spaces.Discrete),
             support_multi_env=True,
         )
 
@@ -197,20 +197,34 @@ class BDQ(OffPolicyAlgorithm):
             replay_data = self.replay_buffer.sample(batch_size, env=self._vec_normalize_env)
 
             with th.no_grad():
-                # Compute the next Q-values using the target network
-                next_q_values = self.q_net_target(replay_data.next_observations)
-                # Follow greedy policy: use the one with the highest value
-                next_q_values, _ = next_q_values.max(dim=1)
-                # Avoid potential broadcast issue
-                next_q_values = next_q_values.reshape(-1, 1)
+                # Double DQN Trick + Dueling DQN trick + Branching DQN trick
+                next_q_values = self.q_net(replay_data.next_observations)
+                argmax = th.argmax(next_q_values, dim=2)
+
+                next_q_values_target = self.q_net_target(replay_data.next_observations)
+                max_next_q_vals = next_q_values_target.gather(2, argmax.unsqueeze(2)).squeeze(-1)
+                max_next_q_vals = max_next_q_vals.mean(1, keepdim=True)
+
                 # 1-step TD target
-                target_q_values = replay_data.rewards + (1 - replay_data.dones) * self.gamma * next_q_values
+                target_q_values = replay_data.rewards + (1 - replay_data.dones) * self.gamma * max_next_q_vals
+
+                # # Compute the next Q-values using the target network
+                # next_q_values = self.q_net_target(replay_data.next_observations)
+                # # Follow greedy policy: use the one with the highest value
+                # next_q_values, _ = next_q_values.max(dim=1)
+                # # Avoid potential broadcast issue
+                # next_q_values = next_q_values.reshape(-1, 1)
+                # # 1-step TD target
+                # target_q_values = replay_data.rewards + (1 - replay_data.dones) * self.gamma * next_q_values
 
             # Get current Q-values estimates
             current_q_values = self.q_net(replay_data.observations)
 
-            # Retrieve the q-values for the actions from the replay buffer
-            current_q_values = th.gather(current_q_values, dim=1, index=replay_data.actions.long())
+            # # Retrieve the q-values for the actions from the replay buffer
+            # current_q_values = th.gather(current_q_values, dim=1, index=replay_data.actions.long())
+            actions = replay_data.actions.long().reshape(replay_data.observations.shape[0],-1,1)
+            current_q_values = current_q_values.gather(2, actions).squeeze(-1)
+            current_q_values = current_q_values.mean(1, keepdim=True)
 
             # Compute Huber loss (less sensitive to outliers)
             loss = F.smooth_l1_loss(current_q_values, target_q_values)
@@ -279,7 +293,10 @@ class BDQ(OffPolicyAlgorithm):
         )
 
     def _excluded_save_params(self) -> List[str]:
-        return super()._excluded_save_params() + ["q_net", "q_net_target"]
+        return super()._excluded_save_params() + ["q_net", "q_net_target",
+                                                  "shared_reprentation",
+                                                  "value_head",
+                                                  "adv_heads"]
 
     def _get_torch_save_params(self) -> Tuple[List[str], List[str]]:
         state_dicts = ["policy", "policy.optimizer"]

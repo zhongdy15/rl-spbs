@@ -1,4 +1,5 @@
 from stable_baselines3 import DQN, PPO, A2C
+from rl_zoo3.utils import BDQ
 import SemiPhysBuildingSim
 import gym
 import numpy as np
@@ -7,20 +8,19 @@ from rl_zoo3.wrappers import FrameSkip
 import os
 
 # 扩增了状态空间之后的模型
-model_dict_2 = {"1220_DQN_const0": "logs/dqn_Baseline_with_energy_0_2024-12-20-10-48-47/dqn/SemiPhysBuildingSim-v0_2",
-                "1222_DQN_const0": "logs/dqn_Baseline_with_energy_0_2024-12-20-17-37-02/dqn/SemiPhysBuildingSim-v0_1"}
+model_dict_2 = {"122_BDQ_const0": "logs/bdq_Baseline_with_energy_0_2024-12-20-21-51-45/bdq/SemiPhysBuildingSim-v0_1"}
 
 reward_mode_list = ["Baseline_without_energy",
                     "Baseline_with_energy",
                     "Baseline_OCC_PPD_without_energy",
                     "Baseline_OCC_PPD_with_energy",]
 
-algo_dict = {"ppo": PPO, "a2c": A2C, "dqn": DQN}
+algo_dict = {"ppo": PPO, "a2c": A2C, "dqn": DQN, "bdq": BDQ}
 
-test_model_key_list = ["1222_DQN_const0",]
+test_model_key_list = ["122_BDQ_const0",]
 
 
-save_folder = "figure/1222DQN/"
+save_folder = "figure/1222BDQ/"
 
 
 if not os.path.exists(save_folder):
