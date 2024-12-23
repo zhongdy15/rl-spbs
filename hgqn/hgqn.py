@@ -18,6 +18,7 @@ from stable_baselines3.dqn.policies import CnnPolicy, DQNPolicy, MlpPolicy, Mult
 
 from stable_baselines3.dqn import DQN
 from hgqn.policies import HGQNPolicy
+from hgqn.hypergrah import get_argmax_from_q_values, get_values_from_idx
 
 SelfHGQN = TypeVar("SelfHGQN", bound="HGQN")
 
@@ -201,10 +202,12 @@ class HGQN(OffPolicyAlgorithm):
             with th.no_grad():
                 # Double DQN Trick + Dueling DQN trick + Branching DQN trick
                 next_q_values = self.q_net(replay_data.next_observations)
-                argmax = th.argmax(next_q_values, dim=2)
+                argmax = get_argmax_from_q_values(next_q_values)
+                # argmax = th.argmax(next_q_values, dim=2)
 
                 next_q_values_target = self.q_net_target(replay_data.next_observations)
-                max_next_q_vals = next_q_values_target.gather(2, argmax.unsqueeze(2)).squeeze(-1)
+                max_next_q_vals = get_values_from_argmax(next_q_values_target, argmax)
+                # max_next_q_vals = next_q_values_target.gather(2, argmax.unsqueeze(2)).squeeze(-1)
                 max_next_q_vals = max_next_q_vals.mean(1, keepdim=True)
 
                 # 1-step TD target

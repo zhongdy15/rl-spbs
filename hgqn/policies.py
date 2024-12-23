@@ -13,6 +13,7 @@ from stable_baselines3.common.torch_layers import (
     create_mlp,
 )
 from stable_baselines3.common.type_aliases import Schedule
+from hgqn.hypergraph import get_hypergraph_nvec
 
 
 class HGQNNetwork(BasePolicy):
@@ -61,11 +62,19 @@ class HGQNNetwork(BasePolicy):
         action_nvec = self.action_space.nvec
         # Dueling Q-Network
         # reference: https://github.com/MoMe36/BranchingDQN/blob/master/model.py
+
+        # Learning To Represent Action Values As a Hypergraph on the Action Vertices
+        # reference: https://arxiv.org/abs/2010.14680
+
+        hypergraph_nvec = get_hypergraph_nvec(action_nvec, hypergraph)
+        print("Hypergraph nvec:", hypergraph_nvec)
+
         shared_reprentation = create_mlp(self.features_dim, -1, self.net_arch, self.activation_fn)
         self.shared_reprentation = nn.Sequential(*shared_reprentation)
 
         self.value_head = nn.Linear(self.net_arch[-1], 1)
-        self.adv_heads = nn.ModuleList([nn.Linear(self.net_arch[-1], ac_dim) for ac_dim in action_nvec])
+        self.adv_heads = nn.ModuleList([nn.Linear(self.net_arch[-1], ac_dim) for ac_dim in hypergraph_nvec])
+        # self.adv_heads = nn.ModuleList([nn.Linear(self.net_arch[-1], ac_dim) for ac_dim in action_nvec])
 
         # action_dim = self.action_space.n  # number of actions
         # q_net = create_mlp(self.features_dim, action_dim, self.net_arch, self.activation_fn)
@@ -81,16 +90,15 @@ class HGQNNetwork(BasePolicy):
         # return self.q_net(self.extract_features(obs, self.features_extractor))
         out = self.shared_reprentation(self.extract_features(obs, self.features_extractor))
         value = self.value_head(out)
-        advs = th.stack([l(out) for l in self.adv_heads], dim=1)
+        # advs = th.stack([l(out) for l in self.adv_heads], dim=1)
 
-        # print(advs.shape)
-        # print(advs.mean(2).shape)
-        test = advs.mean(2, keepdim=True)
-        # input(test.shape)
-        q_val = value.unsqueeze(2) + advs - advs.mean(2, keepdim=True)
-        # input(q_val.shape)
+        q_val_list = []
+        for l in self.adv_heads:
+            advs = l(out)
+            q_val = value + advs - advs.mean(-1, keepdim=True)
+            q_val_list.append(q_val)
 
-        return q_val
+        return q_val_list
 
 
     def _predict(self, observation: th.Tensor, deterministic: bool = True) -> th.Tensor:
