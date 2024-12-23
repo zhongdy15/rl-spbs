@@ -13,7 +13,7 @@ from stable_baselines3.common.torch_layers import (
     create_mlp,
 )
 from stable_baselines3.common.type_aliases import Schedule
-from hgqn.hypergraph import get_hypergraph_nvec
+from hgqn.hypergraph import get_hypergraph_nvec, get_argmax_from_q_values, revert_action
 
 
 class HGQNNetwork(BasePolicy):
@@ -106,8 +106,10 @@ class HGQNNetwork(BasePolicy):
         # # Greedy action
         # action = q_values.argmax(dim=1).reshape(-1)
 
-        q_values = self(observation).squeeze(0)
-        action = th.argmax(q_values, dim=1)
+        q_val_list = self(observation)
+        argmax = get_argmax_from_q_values(q_val_list)
+        action = revert_action(argmax, self.hypergraph, self.action_space.nvec)
+
         return action
 
     def _get_constructor_parameters(self) -> Dict[str, Any]:

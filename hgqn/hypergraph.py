@@ -64,7 +64,7 @@ def get_index(action, action_nvec):
     batch_size, dim = action.shape
     action = action.long()  # 确保是整数类型
 
-    index = th.zeros(batch_size, dtype=th.long)  # 初始化一个 Tensor 来保存每个 [a, b, c, ...] 的序号
+    index = th.zeros(batch_size, dtype=th.long, device=action.device)  # 初始化一个 Tensor 来保存每个 [a, b, c, ...] 的序号
 
     # 对每一维进行循环计算
     for i in range(dim):
@@ -75,7 +75,21 @@ def get_index(action, action_nvec):
     return index
 
 
-def convert_action_space(actions, hypergraph, action_nvec):
+def get_indices(index, action_nvec):
+    # 初始化一个空的 tensor 来存储 indices
+    dim = len(action_nvec)
+    indices = th.zeros(len(index), dim, dtype=th.long, device=index.device)  # 假设 index 是一个 tensor
+
+    for i in range(dim - 1, -1, -1):
+        # 对于每个维度，使用除法和取余操作反向计算每个维度的值
+        divisor = th.tensor(action_nvec[i], dtype=th.long)
+        indices[:, i] = index % divisor
+        index //= divisor  # 更新 index 为剩余的部分
+
+    return indices
+
+
+def convert_action(actions, hypergraph, action_nvec):
     # B * 7 的原始动作，假设 actions 是一个 [B, 7] 的 tensor
     B, _ = actions.shape
 
@@ -92,3 +106,23 @@ def convert_action_space(actions, hypergraph, action_nvec):
             converted_actions[:, i] = action_value
 
     return converted_actions
+
+
+def revert_action(converted_actions, hypergraph, action_nvec):
+    B, _ = converted_actions.shape
+    action_dim = len(action_nvec)
+
+    # 初始化恢复后的动作 tensor
+    original_actions = th.zeros(B, action_dim, dtype=th.long, device=converted_actions.device)
+
+    # 对于每一组 hypergraph
+    for i, group in enumerate(hypergraph):
+        if len(group) == 1:
+            # 如果组中只有一个元素，直接恢复
+            original_actions[:, group[0]] = converted_actions[:, i]
+        else:
+            # 否则，恢复合并的动作
+            action_value = get_indices(converted_actions[:, i], action_nvec[group])
+            original_actions[:, group] = action_value
+
+    return original_actions

@@ -18,7 +18,7 @@ from stable_baselines3.dqn.policies import CnnPolicy, DQNPolicy, MlpPolicy, Mult
 
 from stable_baselines3.dqn import DQN
 from hgqn.policies import HGQNPolicy
-from hgqn.hypergrah import get_argmax_from_q_values, get_values_from_idx
+from hgqn.hypergraph import get_argmax_from_q_values, get_values_from_idx, convert_action
 
 SelfHGQN = TypeVar("SelfHGQN", bound="HGQN")
 
@@ -206,7 +206,7 @@ class HGQN(OffPolicyAlgorithm):
                 # argmax = th.argmax(next_q_values, dim=2)
 
                 next_q_values_target = self.q_net_target(replay_data.next_observations)
-                max_next_q_vals = get_values_from_argmax(next_q_values_target, argmax)
+                max_next_q_vals = get_values_from_idx(next_q_values_target, argmax)
                 # max_next_q_vals = next_q_values_target.gather(2, argmax.unsqueeze(2)).squeeze(-1)
                 max_next_q_vals = max_next_q_vals.mean(1, keepdim=True)
 
@@ -227,8 +227,11 @@ class HGQN(OffPolicyAlgorithm):
 
             # # Retrieve the q-values for the actions from the replay buffer
             # current_q_values = th.gather(current_q_values, dim=1, index=replay_data.actions.long())
-            actions = replay_data.actions.long().reshape(replay_data.observations.shape[0],-1,1)
-            current_q_values = current_q_values.gather(2, actions).squeeze(-1)
+            # actions = replay_data.actions.long().reshape(replay_data.observations.shape[0],-1,1)
+
+            idx = convert_action(replay_data.actions.long(), self.policy_kwargs["hypergraph"], self.action_space.nvec)
+            current_q_values = get_values_from_idx(current_q_values, idx)
+            # current_q_values = current_q_values.gather(2, actions).squeeze(-1)
             current_q_values = current_q_values.mean(1, keepdim=True)
 
             # Compute Huber loss (less sensitive to outliers)
