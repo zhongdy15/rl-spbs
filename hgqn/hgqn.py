@@ -17,12 +17,14 @@ from stable_baselines3.common.utils import get_linear_fn, get_parameters_by_name
 from stable_baselines3.dqn.policies import CnnPolicy, DQNPolicy, MlpPolicy, MultiInputPolicy
 
 from stable_baselines3.dqn import DQN
-from bdq.policies import BDQPolicy
+from hgqn.policies import HGQNPolicy
 
-SelfHGQN = TypeVar("SelfBDQ", bound="BDQ")
+SelfHGQN = TypeVar("SelfHGQN", bound="HGQN")
 
-class BDQ(OffPolicyAlgorithm):
+class HGQN(OffPolicyAlgorithm):
     """
+    HGQN: Learning To Represent Action Values As a Hypergraph on the Action Vertices
+    paper: https://arxiv.org/abs/2010.14680
     Branching Dueling Q-Network(BDQ)
     pape: https://arxiv.org/abs/1711.08946
 
@@ -69,7 +71,7 @@ class BDQ(OffPolicyAlgorithm):
     """
 
     policy_aliases: Dict[str, Type[BasePolicy]] = {
-        "MlpPolicy": BDQPolicy,
+        "MlpPolicy": HGQNPolicy,
         # "CnnPolicy": CnnPolicy,
         # "MultiInputPolicy": MultiInputPolicy,
     }
@@ -141,7 +143,7 @@ class BDQ(OffPolicyAlgorithm):
 
         if _init_setup_model:
             self._setup_model()
-        print("Creating BDQ agent")
+        print("Creating HGQN agent")
 
     def _setup_model(self) -> None:
         super()._setup_model()
@@ -274,14 +276,14 @@ class BDQ(OffPolicyAlgorithm):
         return action, state
 
     def learn(
-        self: SelfBDQ,
+        self: SelfHGQN,
         total_timesteps: int,
         callback: MaybeCallback = None,
         log_interval: int = 4,
-        tb_log_name: str = "BDQ",
+        tb_log_name: str = "HGQN",
         reset_num_timesteps: bool = True,
         progress_bar: bool = False,
-    ) -> SelfBDQ:
+    ) -> SelfHGQN:
 
         return super().learn(
             total_timesteps=total_timesteps,

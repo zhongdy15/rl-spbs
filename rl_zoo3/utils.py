@@ -23,6 +23,7 @@ from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecEnv,
 from torch import nn as nn  # noqa: F401 pylint: disable=unused-import
 
 from bdq.bdq import BDQ
+from hgqn.hgqn import HGQN
 
 ALGOS: Dict[str, Type[BaseAlgorithm]] = {
     "a2c": A2C,
@@ -38,6 +39,7 @@ ALGOS: Dict[str, Type[BaseAlgorithm]] = {
     "trpo": TRPO,
     "ppo_lstm": RecurrentPPO,
     "bdq": BDQ,
+    "hgqn": HGQN,
 }
 
 

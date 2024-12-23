@@ -1,7 +1,7 @@
 import os
 import time
 
-algo = "bdq"
+algo = "hgqn"
 seed_list = [0,10,20]
 gpu_list = [7]
 reward_mode = "Baseline_with_energy"

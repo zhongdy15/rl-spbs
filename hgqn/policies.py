@@ -15,7 +15,7 @@ from stable_baselines3.common.torch_layers import (
 from stable_baselines3.common.type_aliases import Schedule
 
 
-class BDQNetwork(BasePolicy):
+class HGQNNetwork(BasePolicy):
     """
     Action-Value (Q-Value) network for DQN
 
@@ -47,7 +47,7 @@ class BDQNetwork(BasePolicy):
         if net_arch is None:
             net_arch = [64, 64]
 
-        print("Creating BDQNetwork")
+        print("Creating HGQNNetwork")
         self.net_arch = net_arch
         self.activation_fn = activation_fn
         self.features_extractor = features_extractor
@@ -111,7 +111,7 @@ class BDQNetwork(BasePolicy):
         return data
 
 
-class BDQPolicy(BasePolicy):
+class HGQNPolicy(BasePolicy):
     """
     Policy class with Q-Value Net and target net for DQN
 
@@ -154,7 +154,7 @@ class BDQPolicy(BasePolicy):
             normalize_images=normalize_images,
         )
 
-        print("Creating BDQPolicy")
+        print("Creating HGQNPolicy")
         if net_arch is None:
             if features_extractor_class == NatureCNN:
                 net_arch = []
@@ -193,10 +193,10 @@ class BDQPolicy(BasePolicy):
         # Setup optimizer with initial learning rate
         self.optimizer = self.optimizer_class(self.parameters(), lr=lr_schedule(1), **self.optimizer_kwargs)
 
-    def make_q_net(self) -> BDQNetwork:
+    def make_q_net(self) -> HGQNNetwork:
         # Make sure we always have separate networks for features extractors etc
         net_args = self._update_features_extractor(self.net_args, features_extractor=None)
-        return BDQNetwork(**net_args).to(self.device)
+        return HGQNNetwork(**net_args).to(self.device)
 
     def forward(self, obs: th.Tensor, deterministic: bool = True) -> th.Tensor:
         return self._predict(obs, deterministic=deterministic)
