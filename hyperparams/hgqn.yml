@@ -15,4 +15,6 @@ SemiPhysBuildingSim-v0:
   exploration_fraction: 0.16
   exploration_final_eps: 0.04
   policy_kwargs: "dict(net_arch=[256, 256], 
-                       hypergraph=[[0,], [1,], [2,], [3, 4, 5,], [6,]])"
+                       hypergraph=[[0,], [1,], [2,], [3,], [4,], [5,], [6,]])"
+#  policy_kwargs: "dict(net_arch=[256, 256],
+#                         hypergraph=[[0,], [1,], [2,], [3, 4, 5,], [6,]])"
