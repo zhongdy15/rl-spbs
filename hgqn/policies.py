@@ -36,6 +36,7 @@ class HGQNNetwork(BasePolicy):
         net_arch: Optional[List[int]] = None,
         activation_fn: Type[nn.Module] = nn.ReLU,
         normalize_images: bool = True,
+        hypergraph: List = None,
     ):
         super().__init__(
             observation_space,
@@ -47,11 +48,15 @@ class HGQNNetwork(BasePolicy):
         if net_arch is None:
             net_arch = [64, 64]
 
+        if hypergraph is None:
+            raise ValueError("Hypergraph must be provided for HGQNNetwork")
+
         print("Creating HGQNNetwork")
         self.net_arch = net_arch
         self.activation_fn = activation_fn
         self.features_extractor = features_extractor
         self.features_dim = features_dim
+        self.hypergraph = hypergraph
 
         action_nvec = self.action_space.nvec
         # Dueling Q-Network
@@ -106,6 +111,7 @@ class HGQNNetwork(BasePolicy):
                 features_dim=self.features_dim,
                 activation_fn=self.activation_fn,
                 features_extractor=self.features_extractor,
+                hypergraph=self.hypergraph,
             )
         )
         return data
@@ -143,6 +149,7 @@ class HGQNPolicy(BasePolicy):
         normalize_images: bool = True,
         optimizer_class: Type[th.optim.Optimizer] = th.optim.Adam,
         optimizer_kwargs: Optional[Dict[str, Any]] = None,
+        hypergraph: List = None,
     ):
         super().__init__(
             observation_space,
@@ -161,8 +168,12 @@ class HGQNPolicy(BasePolicy):
             else:
                 net_arch = [64, 64]
 
+        if hypergraph is None:
+            raise ValueError("Hypergraph must be provided for HGQNPolicy")
+
         self.net_arch = net_arch
         self.activation_fn = activation_fn
+        self.hypergraph = hypergraph
 
         self.net_args = {
             "observation_space": self.observation_space,
@@ -170,6 +181,7 @@ class HGQNPolicy(BasePolicy):
             "net_arch": self.net_arch,
             "activation_fn": self.activation_fn,
             "normalize_images": normalize_images,
+            "hypergraph": self.hypergraph,
         }
 
         self.q_net, self.q_net_target = None, None
@@ -216,6 +228,7 @@ class HGQNPolicy(BasePolicy):
                 optimizer_kwargs=self.optimizer_kwargs,
                 features_extractor_class=self.features_extractor_class,
                 features_extractor_kwargs=self.features_extractor_kwargs,
+                hypergraph=self.net_args["hypergraph"],
             )
         )
         return data
