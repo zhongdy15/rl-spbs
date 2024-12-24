@@ -23,7 +23,7 @@ class ZONE():
         self.name = name
         self.area = area         #  m2
         self.volume = area * 3   #  m3
-        self.temp = 30.0   #  oC
+        self.temp = 26.5   #  oC
         self.temp_set = 24.0
         self.RH = 40.0
         self.RH_set = 70.0
@@ -126,13 +126,13 @@ class ZONE():
                 self.occupant_trans_list[o] = self.occupant_trans
 
         self.Qa_0 = c * rou * G_fan/60 * (self.sup_temp - self.temp)
-        # if self.name == "room4":
-        #     self.Qa = 0.7 * self.Qa_0 + 0.2*Qa_last_minute[4] + 0.1*Qa_last_minute[5]
-        # if self.name == "room5":
-        #     self.Qa = 0.6 * self.Qa_0 + 0.2*Qa_last_minute[3] + 0.2*Qa_last_minute[5]
-        # if self.name == "room6":
-        #     self.Qa = 0.7 * self.Qa_0 + 0.1*Qa_last_minute[3] + 0.2*Qa_last_minute[4]
-        self.Qa = self.Qa_0
+        if self.name == "room4":
+            self.Qa = 0.5 * self.Qa_0 + 0.3*Qa_last_minute[4] + 0.2*Qa_last_minute[5]
+        if self.name == "room5":
+            self.Qa = 0.5 * self.Qa_0 + 0.25*Qa_last_minute[3] + 0.25*Qa_last_minute[5]
+        if self.name == "room6":
+            self.Qa = 0.5 * self.Qa_0 + 0.1*Qa_last_minute[3] + 0.3*Qa_last_minute[4]
+        # self.Qa = self.Qa_0
         self.Qw = 0
         self.DT = dry_bulb_t - self.temp
         self.TDeqr = self.DT + (alpha * Rsor * Itd[min+540][4])
