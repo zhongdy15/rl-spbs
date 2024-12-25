@@ -324,11 +324,9 @@ class SemiPhysBuildingSimulation(gym.core.Env):
         G_rec = show_origin(G, self.new_columes)
         P -= (P[11][0] - 10000) * np.ones((nodes, 1))
 
-        # Add input: the Q_a of all the room in the past time
-        Qa_last_minute = []
-        for r in range(0, 7):
-            Qa_last_minute.append(self.room_list[r].Qa / 60)
-        # print("okk")
+
+        all_G_fan = []
+        # print("action: " + str(action))
 
         for r in range(0, 7):
             rou = cal_density(sup_temp)
@@ -337,8 +335,11 @@ class SemiPhysBuildingSimulation(gym.core.Env):
             self.fcu_list[r].cal_power()
             self.fcu_list[r].cal_supplyair(self.room_list[r].temp)
             R_room_occ(self.step_min, self.room_list[r])
+            all_G_fan.append(self.fcu_list[r].G_fan)
+
+        for r in range(0, 7):
             self.room_list[r].cal_room(self.dry_bulb_his[self.step_hour], self.step_min, rou, self.fcu_list[r].G_fan,
-                                       Qa_last_minute=Qa_last_minute)
+                                       all_G_fan=all_G_fan)
             self.fcu_list[r].cal_returntemp(self.room_list[r].Qa / 60)
             return_sum += 0.95 * self.fcu_list[r].waterflow * self.fcu_list[r].tw_return
             self.fcu_list[r].tw_supplypressure = P[r + 3][0]

@@ -96,7 +96,7 @@ class ZONE():
         self.nano_flag = False
         self.history_flag = True
 
-    def cal_room(self, dry_bulb_t, min, rou, G_fan, Qa_last_minute):  # min
+    def cal_room(self, dry_bulb_t, min, rou, G_fan, all_G_fan):  # min
         # self.occupant_num = self.occupant_num_data[min+541]
         # self.occupant_num = random.randint(0, 8)
         # Constants
@@ -125,13 +125,15 @@ class ZONE():
                 self.occupant_list[o] = occupant_num
                 self.occupant_trans_list[o] = self.occupant_trans
 
+        # print("all_G_fan:"+str(all_G_fan))
+        # print("name:" + self.name + " G_fan:" + str(G_fan))
         self.Qa_0 = c * rou * G_fan/60 * (self.sup_temp - self.temp)
-        if self.name == "room4":
-            self.Qa = 0.5 * self.Qa_0 + 0.3*Qa_last_minute[4] + 0.2*Qa_last_minute[5]
-        if self.name == "room5":
-            self.Qa = 0.5 * self.Qa_0 + 0.25*Qa_last_minute[3] + 0.25*Qa_last_minute[5]
-        if self.name == "room6":
-            self.Qa = 0.5 * self.Qa_0 + 0.1*Qa_last_minute[3] + 0.3*Qa_last_minute[4]
+        # if self.name == "room4":
+        #     self.Qa = 0.5 * self.Qa_0 + 0.3*Qa_last_minute[4] + 0.2*Qa_last_minute[5]
+        # if self.name == "room5":
+        #     self.Qa = 0.5 * self.Qa_0 + 0.25*Qa_last_minute[3] + 0.25*Qa_last_minute[5]
+        # if self.name == "room6":
+        #     self.Qa = 0.5 * self.Qa_0 + 0.1*Qa_last_minute[3] + 0.3*Qa_last_minute[4]
         self.Qa = self.Qa_0
         self.Qw = 0
         self.DT = dry_bulb_t - self.temp
