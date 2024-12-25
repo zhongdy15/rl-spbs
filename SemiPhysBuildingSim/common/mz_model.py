@@ -127,6 +127,16 @@ class ZONE():
 
         # print("all_G_fan:"+str(all_G_fan))
         # print("name:" + self.name + " G_fan:" + str(G_fan))
+
+        G_fan_origin = G_fan
+        if self.name == "room4":
+            G_fan = 0.5 * G_fan_origin + 0.3*all_G_fan[4] + 0.2*all_G_fan[5]
+        if self.name == "room5":
+            G_fan = 0.5 * G_fan_origin + 0.25*all_G_fan[3] + 0.25*all_G_fan[5]
+        if self.name == "room6":
+            G_fan = 0.5 * G_fan_origin + 0.2*all_G_fan[3] + 0.3*all_G_fan[4]
+
+
         self.Qa_0 = c * rou * G_fan/60 * (self.sup_temp - self.temp)
         # if self.name == "room4":
         #     self.Qa = 0.5 * self.Qa_0 + 0.3*Qa_last_minute[4] + 0.2*Qa_last_minute[5]
