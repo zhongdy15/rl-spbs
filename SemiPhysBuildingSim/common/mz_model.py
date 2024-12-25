@@ -132,7 +132,7 @@ class ZONE():
             self.Qa = 0.5 * self.Qa_0 + 0.25*Qa_last_minute[3] + 0.25*Qa_last_minute[5]
         if self.name == "room6":
             self.Qa = 0.5 * self.Qa_0 + 0.1*Qa_last_minute[3] + 0.3*Qa_last_minute[4]
-        # self.Qa = self.Qa_0
+        self.Qa = self.Qa_0
         self.Qw = 0
         self.DT = dry_bulb_t - self.temp
         self.TDeqr = self.DT + (alpha * Rsor * Itd[min+540][4])
