@@ -1,5 +1,5 @@
 from stable_baselines3 import DQN, PPO, A2C
-from rl_zoo3.utils import BDQ
+from rl_zoo3.utils import BDQ, HGQN
 import SemiPhysBuildingSim
 import gym
 import numpy as np
@@ -8,19 +8,30 @@ from rl_zoo3.wrappers import FrameSkip
 import os
 
 # 扩增了状态空间之后的模型
-model_dict_2 = {"122_BDQ_const0": "logs/bdq_Baseline_with_energy_0_2024-12-20-21-51-45/bdq/SemiPhysBuildingSim-v0_1"}
+model_dict_2 = {"122_BDQ_const0": "logs/bdq_Baseline_with_energy_0_2024-12-20-21-51-45/bdq/SemiPhysBuildingSim-v0_1",
+                "1225_Baseline_with_energy_const0_A2C": "logs/a2c_Baseline_with_energy_0_2024-12-24-12-06-39/a2c/SemiPhysBuildingSim-v0_1",
+                "1225_Baseline_with_energy_const0_PPO":"logs/ppo_Baseline_with_energy_0_2024-12-24-12-11-31/ppo/SemiPhysBuildingSim-v0_1",
+                "1225_Baseline_with_energy_const0_BDQ" :"logs/bdq_Baseline_with_energy_0_2024-12-24-12-13-08/bdq/SemiPhysBuildingSim-v0_1",
+                "1225_Baseline_with_energy_const0_HGQN" : "logs/hgqn_Baseline_with_energy_0_2024-12-24-12-14-19/hgqn/SemiPhysBuildingSim-v0_1",
+                "1225_Baseline_with_energy_const0_DQN" : "logs/dqn_Baseline_with_energy_0_2024-12-24-12-16-26/dqn/SemiPhysBuildingSim-v0_1",}
 
 reward_mode_list = ["Baseline_without_energy",
                     "Baseline_with_energy",
                     "Baseline_OCC_PPD_without_energy",
                     "Baseline_OCC_PPD_with_energy",]
 
-algo_dict = {"ppo": PPO, "a2c": A2C, "dqn": DQN, "bdq": BDQ}
+algo_dict = {"ppo": PPO, "a2c": A2C, "dqn": DQN, "bdq": BDQ, "hgqn": HGQN}
 
-test_model_key_list = ["122_BDQ_const0",]
+test_model_key_list = [
+    # "1225_Baseline_with_energy_const0_A2C",
+    #                    "1225_Baseline_with_energy_const0_PPO",
+    #                    "1225_Baseline_with_energy_const0_BDQ",
+    #                    "1225_Baseline_with_energy_const0_HGQN",
+                       "1225_Baseline_with_energy_const0_DQN"
+]
 
 
-save_folder = "figure/1222BDQ/"
+save_folder = "figure/1225_ExpGroup_1/"
 
 
 if not os.path.exists(save_folder):
@@ -49,7 +60,7 @@ for model_key in test_model_key_list:
     # Extract tradeoff_constant and frame_skip from model_key
     # Assuming the format "constantX_skipY"
     tradeoff_constant = float(model_key.split("const")[1].split("_")[0])
-    frame_skip = 1
+    frame_skip = 5
 
     env1 = gym.make("SemiPhysBuildingSim-v0",
                     reward_mode=reward_mode,
