@@ -84,7 +84,7 @@ Acrobot-v1:
 SemiPhysBuildingSim-v0:
   env_wrapper:
     - rl_zoo3.wrappers.FrameSkip:
-        skip: 1
+        skip: 5
   n_timesteps: !!float 5e5
   policy: 'MlpPolicy'
   learning_rate: !!float 2.3e-3

@@ -190,7 +190,7 @@ Swimmer-v3:
 SemiPhysBuildingSim-v0:
   env_wrapper:
     - rl_zoo3.wrappers.FrameSkip:
-        skip: 1
+        skip: 5
   n_envs: 8
   n_timesteps: !!float 5e5
   policy: 'MlpPolicy'
