@@ -2,6 +2,7 @@ import gym
 import numpy as np
 from gym import spaces
 from sb3_contrib.common.wrappers import TimeFeatureWrapper  # noqa: F401 (backward compatibility)
+from rl_zoo3.disabled_wrapper import DisabledWrapper
 
 
 class DoneOnSuccessWrapper(gym.Wrapper):

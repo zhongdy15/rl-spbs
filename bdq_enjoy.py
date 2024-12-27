@@ -4,7 +4,7 @@ import SemiPhysBuildingSim
 import gym
 import numpy as np
 import matplotlib.pyplot as plt
-from rl_zoo3.wrappers import FrameSkip
+from rl_zoo3.wrappers import FrameSkip, DisabledWrapper
 import os
 
 # 扩增了状态空间之后的模型
@@ -42,15 +42,15 @@ reward_mode_list = ["Baseline_without_energy",
 algo_dict = {"ppo": PPO, "a2c": A2C, "dqn": DQN, "bdq": BDQ, "hgqn": HGQN}
 
 test_model_key_list = [
-    # "1227_Baseline_OCC_PPD_with_energy_const0_A2C",
-    # "1227_Baseline_OCC_PPD_with_energy_const0_PPO",
-    # "1227_Baseline_OCC_PPD_with_energy_const0_BDQ",
-    # "1227_Baseline_OCC_PPD_with_energy_const0_HGQN",
-    "1227_Baseline_OCC_PPD_with_energy_const0_DQN",
+    "1227_Baseline_with_energy_const10_A2C",
+    "1227_Baseline_with_energy_const10_PPO",
+    "1227_Baseline_with_energy_const10_BDQ",
+    "1227_Baseline_with_energy_const10_HGQN",
+    # "1227_Baseline_OCC_PPD_with_energy_const0_DQN",
 ]
 
 
-save_folder = "figure/1227_ExpGroup_4/"
+save_folder = "figure/1227_ExpGroup_2_Disabled_Test/"
 
 
 if not os.path.exists(save_folder):
@@ -87,6 +87,8 @@ for model_key in test_model_key_list:
                     eval_mode=True)
     env1 = FrameSkip(env1, skip=frame_skip)
     print("Frame skip: " + str(frame_skip))
+
+    env1 = DisabledWrapper(env1)
 
     for _ in range(1):
         action_list = []
