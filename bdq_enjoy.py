@@ -9,11 +9,30 @@ import os
 
 # 扩增了状态空间之后的模型
 model_dict_2 = {"122_BDQ_const0": "logs/bdq_Baseline_with_energy_0_2024-12-20-21-51-45/bdq/SemiPhysBuildingSim-v0_1",
-                "1225_Baseline_with_energy_const0_A2C": "logs/a2c_Baseline_with_energy_0_2024-12-24-12-06-39/a2c/SemiPhysBuildingSim-v0_1",
-                "1225_Baseline_with_energy_const0_PPO":"logs/ppo_Baseline_with_energy_0_2024-12-24-12-11-31/ppo/SemiPhysBuildingSim-v0_1",
-                "1225_Baseline_with_energy_const0_BDQ" :"logs/bdq_Baseline_with_energy_0_2024-12-24-12-13-08/bdq/SemiPhysBuildingSim-v0_1",
-                "1225_Baseline_with_energy_const0_HGQN" : "logs/hgqn_Baseline_with_energy_0_2024-12-24-12-14-19/hgqn/SemiPhysBuildingSim-v0_1",
-                "1225_Baseline_with_energy_const0_DQN" : "logs/dqn_Baseline_with_energy_0_2024-12-24-12-16-26/dqn/SemiPhysBuildingSim-v0_1",}
+                "1226_Baseline_with_energy_const0_A2C": "logs/a2c_Baseline_with_energy_0_2024-12-25-21-18-17/a2c/SemiPhysBuildingSim-v0_1",
+                "1226_Baseline_with_energy_const0_PPO":"logs/ppo_Baseline_with_energy_0_2024-12-25-21-18-17/ppo/SemiPhysBuildingSim-v0_1",
+                "1226_Baseline_with_energy_const0_BDQ" :"logs/bdq_Baseline_with_energy_0_2024-12-25-21-18-17/bdq/SemiPhysBuildingSim-v0_1",
+                "1226_Baseline_with_energy_const0_HGQN" : "logs/hgqn_Baseline_with_energy_0_2024-12-25-21-18-17/hgqn/SemiPhysBuildingSim-v0_1",
+                "1226_Baseline_with_energy_const0_DQN" : "logs/dqn_Baseline_with_energy_0_2024-12-25-21-23-53/dqn/SemiPhysBuildingSim-v0_1",
+
+                "1227_Baseline_with_energy_const10_A2C": "logs/a2c_Baseline_with_energy_10_2024-12-26-10-38-29/a2c/SemiPhysBuildingSim-v0_1",
+                "1227_Baseline_with_energy_const10_PPO": "logs/ppo_Baseline_with_energy_10_2024-12-26-10-38-29/ppo/SemiPhysBuildingSim-v0_1",
+                "1227_Baseline_with_energy_const10_BDQ": "logs/bdq_Baseline_with_energy_10_2024-12-26-10-38-29/bdq/SemiPhysBuildingSim-v0_1",
+                "1227_Baseline_with_energy_const10_HGQN": "logs/hgqn_Baseline_with_energy_10_2024-12-26-10-38-29/hgqn/SemiPhysBuildingSim-v0_1",
+                "1227_Baseline_with_energy_const10_DQN": "logs/dqn_Baseline_with_energy_10_2024-12-26-10-41-20/dqn/SemiPhysBuildingSim-v0_1",
+
+                "1227_Baseline_with_energy_const100_A2C": "logs/a2c_Baseline_with_energy_100_2024-12-26-10-43-04/a2c/SemiPhysBuildingSim-v0_1",
+                "1227_Baseline_with_energy_const100_PPO": "logs/ppo_Baseline_with_energy_100_2024-12-26-10-43-04/ppo/SemiPhysBuildingSim-v0_1",
+                "1227_Baseline_with_energy_const100_BDQ": "logs/bdq_Baseline_with_energy_100_2024-12-26-10-43-04/bdq/SemiPhysBuildingSim-v0_1",
+                "1227_Baseline_with_energy_const100_HGQN": "logs/hgqn_Baseline_with_energy_100_2024-12-26-10-43-04/hgqn/SemiPhysBuildingSim-v0_1",
+                "1227_Baseline_with_energy_const100_DQN": "logs/dqn_Baseline_with_energy_100_2024-12-26-10-45-21/dqn/SemiPhysBuildingSim-v0_1",
+
+                "1227_Baseline_OCC_PPD_with_energy_const0_A2C": "logs/a2c_Baseline_OCC_PPD_with_energy_0_2024-12-26-10-47-43/a2c/SemiPhysBuildingSim-v0_1",
+                "1227_Baseline_OCC_PPD_with_energy_const0_PPO": "logs/ppo_Baseline_OCC_PPD_with_energy_0_2024-12-26-10-47-43/ppo/SemiPhysBuildingSim-v0_1",
+                "1227_Baseline_OCC_PPD_with_energy_const0_BDQ": "logs/bdq_Baseline_OCC_PPD_with_energy_0_2024-12-26-10-47-43/bdq/SemiPhysBuildingSim-v0_1",
+                "1227_Baseline_OCC_PPD_with_energy_const0_HGQN": "logs/hgqn_Baseline_OCC_PPD_with_energy_0_2024-12-26-10-47-43/hgqn/SemiPhysBuildingSim-v0_1",
+                "1227_Baseline_OCC_PPD_with_energy_const0_DQN": "logs/dqn_Baseline_OCC_PPD_with_energy_0_2024-12-26-10-50-44/dqn/SemiPhysBuildingSim-v0_1",
+                }
 
 reward_mode_list = ["Baseline_without_energy",
                     "Baseline_with_energy",
@@ -23,15 +42,15 @@ reward_mode_list = ["Baseline_without_energy",
 algo_dict = {"ppo": PPO, "a2c": A2C, "dqn": DQN, "bdq": BDQ, "hgqn": HGQN}
 
 test_model_key_list = [
-    # "1225_Baseline_with_energy_const0_A2C",
-    #                    "1225_Baseline_with_energy_const0_PPO",
-    #                    "1225_Baseline_with_energy_const0_BDQ",
-    #                    "1225_Baseline_with_energy_const0_HGQN",
-                       "1225_Baseline_with_energy_const0_DQN"
+    # "1227_Baseline_OCC_PPD_with_energy_const0_A2C",
+    # "1227_Baseline_OCC_PPD_with_energy_const0_PPO",
+    # "1227_Baseline_OCC_PPD_with_energy_const0_BDQ",
+    # "1227_Baseline_OCC_PPD_with_energy_const0_HGQN",
+    "1227_Baseline_OCC_PPD_with_energy_const0_DQN",
 ]
 
 
-save_folder = "figure/1225_ExpGroup_1/"
+save_folder = "figure/1227_ExpGroup_4/"
 
 
 if not os.path.exists(save_folder):

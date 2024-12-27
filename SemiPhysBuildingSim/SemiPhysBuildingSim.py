@@ -12,7 +12,8 @@ import csv
 from .common.mz_model import ZONE, FCU, PUMP, HEATPUMP
 from sympy import Matrix
 
-USE_Multi_Discrete = True
+# False # True #
+USE_Multi_Discrete = True #False #True # False # True #
 if USE_Multi_Discrete:
     from .common.action_transformation_multi_discrete import available_action_set, create_action_space, \
         map_action_to_controls, map_controls_to_action
