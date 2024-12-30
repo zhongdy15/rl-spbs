@@ -112,6 +112,18 @@ class HGQNNetwork(BasePolicy):
 
         return action
 
+    def _predict_with_disabled_action(self, observation: th.Tensor, deterministic: bool = True) -> th.Tensor:
+        # q_values = self(observation)
+        # # Greedy action
+        # action = q_values.argmax(dim=1).reshape(-1)
+
+        q_val_list = self(observation)
+        q_val_list[3][0, [2, 3, 6, 7]] = float('-inf')
+        argmax = get_argmax_from_q_values(q_val_list)
+        action = revert_action(argmax, self.hypergraph, self.action_space.nvec)
+
+        return action
+
     def _get_constructor_parameters(self) -> Dict[str, Any]:
         data = super()._get_constructor_parameters()
 

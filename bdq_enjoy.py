@@ -1,11 +1,13 @@
 from stable_baselines3 import DQN, PPO, A2C
 from rl_zoo3.utils import BDQ, HGQN
+# from robusthgqn.hgqn import HGQN as RobustHGQN
 import SemiPhysBuildingSim
 import gym
 import numpy as np
 import matplotlib.pyplot as plt
 from rl_zoo3.wrappers import FrameSkip, DisabledWrapper
 import os
+import torch as th
 
 # 扩增了状态空间之后的模型
 model_dict_2 = {"122_BDQ_const0": "logs/bdq_Baseline_with_energy_0_2024-12-20-21-51-45/bdq/SemiPhysBuildingSim-v0_1",
@@ -42,15 +44,15 @@ reward_mode_list = ["Baseline_without_energy",
 algo_dict = {"ppo": PPO, "a2c": A2C, "dqn": DQN, "bdq": BDQ, "hgqn": HGQN}
 
 test_model_key_list = [
-    "1227_Baseline_with_energy_const10_A2C",
-    "1227_Baseline_with_energy_const10_PPO",
-    "1227_Baseline_with_energy_const10_BDQ",
+    # "1227_Baseline_with_energy_const10_A2C",
+    # "1227_Baseline_with_energy_const10_PPO",
+    # "1227_Baseline_with_energy_const10_BDQ",
     "1227_Baseline_with_energy_const10_HGQN",
     # "1227_Baseline_OCC_PPD_with_energy_const0_DQN",
 ]
 
 
-save_folder = "figure/1227_ExpGroup_2_Disabled_Test/"
+save_folder = "figure/1227_ExpGroup_2_Disabled_Test_RobustHGQN/"
 
 
 if not os.path.exists(save_folder):
@@ -98,7 +100,10 @@ for model_key in test_model_key_list:
         i = 0
         while not done:
             i += 1
-            action , _state = model.predict(obs)
+            with th.no_grad():
+                action = model.policy.q_net._predict_with_disabled_action(model.policy.obs_to_tensor(obs)[0])\
+                    .cpu().numpy().reshape((-1,) + model.action_space.shape).squeeze(axis=0)
+            # action, _state = model.predict(obs)
             # action = env1.action_space.sample()
             # action = np.array(action)
             # action = 127
