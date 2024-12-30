@@ -90,7 +90,7 @@ for model_key in test_model_key_list:
     env1 = FrameSkip(env1, skip=frame_skip)
     print("Frame skip: " + str(frame_skip))
 
-    env1 = DisabledWrapper(env1)
+    # env1 = DisabledWrapper(env1)
 
     for _ in range(1):
         action_list = []
@@ -100,10 +100,10 @@ for model_key in test_model_key_list:
         i = 0
         while not done:
             i += 1
-            with th.no_grad():
-                action = model.policy.q_net._predict_with_disabled_action(model.policy.obs_to_tensor(obs)[0])\
-                    .cpu().numpy().reshape((-1,) + model.action_space.shape).squeeze(axis=0)
-            # action, _state = model.predict(obs)
+            # with th.no_grad():
+            #     action = model.policy.q_net._predict_with_disabled_action(model.policy.obs_to_tensor(obs)[0])\
+            #         .cpu().numpy().reshape((-1,) + model.action_space.shape).squeeze(axis=0)
+            action, _state = model.predict(obs)
             # action = env1.action_space.sample()
             # action = np.array(action)
             # action = 127
