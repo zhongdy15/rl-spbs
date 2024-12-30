@@ -34,6 +34,18 @@ model_dict_2 = {"122_BDQ_const0": "logs/bdq_Baseline_with_energy_0_2024-12-20-21
                 "1227_Baseline_OCC_PPD_with_energy_const0_BDQ": "logs/bdq_Baseline_OCC_PPD_with_energy_0_2024-12-26-10-47-43/bdq/SemiPhysBuildingSim-v0_1",
                 "1227_Baseline_OCC_PPD_with_energy_const0_HGQN": "logs/hgqn_Baseline_OCC_PPD_with_energy_0_2024-12-26-10-47-43/hgqn/SemiPhysBuildingSim-v0_1",
                 "1227_Baseline_OCC_PPD_with_energy_const0_DQN": "logs/dqn_Baseline_OCC_PPD_with_energy_0_2024-12-26-10-50-44/dqn/SemiPhysBuildingSim-v0_1",
+
+                "1230_Baseline_OCC_PPD_with_energy_const10_A2C": "logs/a2c_Baseline_OCC_PPD_with_energy_10_2024-12-26-10-53-51/a2c/SemiPhysBuildingSim-v0_1",
+                "1230_Baseline_OCC_PPD_with_energy_const10_PPO": "logs/ppo_Baseline_OCC_PPD_with_energy_10_2024-12-26-10-53-51/ppo/SemiPhysBuildingSim-v0_1",
+                "1230_Baseline_OCC_PPD_with_energy_const10_BDQ": "logs/bdq_Baseline_OCC_PPD_with_energy_10_2024-12-26-10-53-51/bdq/SemiPhysBuildingSim-v0_1",
+                "1230_Baseline_OCC_PPD_with_energy_const10_HGQN": "logs/hgqn_Baseline_OCC_PPD_with_energy_10_2024-12-26-10-53-51/hgqn/SemiPhysBuildingSim-v0_1",
+                "1230_Baseline_OCC_PPD_with_energy_const10_DQN": "logs/dqn_Baseline_OCC_PPD_with_energy_10_2024-12-26-10-56-47/dqn/SemiPhysBuildingSim-v0_1",
+
+                "1230_Baseline_OCC_PPD_with_energy_const100_A2C": "logs/a2c_Baseline_OCC_PPD_with_energy_100_2024-12-26-10-58-41/a2c/SemiPhysBuildingSim-v0_1",
+                "1230_Baseline_OCC_PPD_with_energy_const100_PPO": "logs/ppo_Baseline_OCC_PPD_with_energy_100_2024-12-26-10-58-41/ppo/SemiPhysBuildingSim-v0_1",
+                "1230_Baseline_OCC_PPD_with_energy_const100_BDQ": "logs/bdq_Baseline_OCC_PPD_with_energy_100_2024-12-26-10-58-41/bdq/SemiPhysBuildingSim-v0_1",
+                "1230_Baseline_OCC_PPD_with_energy_const100_HGQN": "logs/hgqn_Baseline_OCC_PPD_with_energy_100_2024-12-26-10-58-41/hgqn/SemiPhysBuildingSim-v0_1",
+                "1230_Baseline_OCC_PPD_with_energy_const100_DQN": "logs/dqn_Baseline_OCC_PPD_with_energy_100_2024-12-26-11-02-02/dqn/SemiPhysBuildingSim-v0_1",
                 }
 
 reward_mode_list = ["Baseline_without_energy",
@@ -44,15 +56,15 @@ reward_mode_list = ["Baseline_without_energy",
 algo_dict = {"ppo": PPO, "a2c": A2C, "dqn": DQN, "bdq": BDQ, "hgqn": HGQN}
 
 test_model_key_list = [
-    # "1227_Baseline_with_energy_const10_A2C",
-    # "1227_Baseline_with_energy_const10_PPO",
-    # "1227_Baseline_with_energy_const10_BDQ",
-    "1227_Baseline_with_energy_const10_HGQN",
-    # "1227_Baseline_OCC_PPD_with_energy_const0_DQN",
+    "1230_Baseline_OCC_PPD_with_energy_const100_A2C",
+    "1230_Baseline_OCC_PPD_with_energy_const100_PPO",
+    "1230_Baseline_OCC_PPD_with_energy_const100_BDQ",
+    "1230_Baseline_OCC_PPD_with_energy_const100_HGQN",
+    # "1230_Baseline_OCC_PPD_with_energy_const100_DQN",
 ]
 
 
-save_folder = "figure/1227_ExpGroup_2_Disabled_Test_RobustHGQN/"
+save_folder = "figure/1227_ExpGroup_6/"
 
 
 if not os.path.exists(save_folder):
