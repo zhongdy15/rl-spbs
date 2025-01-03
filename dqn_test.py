@@ -3,9 +3,9 @@ import time
 
 algo_list = ["dqn"]
 seed_list = [0,10,20]
-gpu_list = [5]
-reward_mode = "Baseline_OCC_PPD_with_energy"
-tradeoff_constant = 100
+gpu_list = [2]
+reward_mode = "Baseline_with_energy"
+tradeoff_constant = 10
 
 env_list = ["SemiPhysBuildingSim-v0"]
 time_flag = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())

@@ -13,11 +13,12 @@ def available_action_set():
             "roomtemp_setpoint": {24}, #
             "roomRH_setpoint": {70},# 固定70
             "FCU_onoff_setpoint": {1}, # 选{0，1}最简单控制
-            "FCU_fan_setpoint": {0,1,2,3}, #{0,3}, #{0,1,2,3}, # 选{1，2，3}低中高档
+            "FCU_fan_setpoint": {0,1,2,3}, #{0,3}, #{0,1,2,3}, # 选{1，2，3}低中高档 {0,1,3},#
             "FCU_workingmode_setpoint": {1},
             "valve_setpoint": {100},# 固定100
         }
 
+    print("FCU_fan_setpoint: " + str(action["room1_control"]["FCU_fan_setpoint"]))
     # 初始化泵的控制参数[暂时固定]
     action["pump1_control"] = {
         "pump_onoff_setpoint": {1},

@@ -1,11 +1,11 @@
 import os
 import time
 
-algo_list = ["a2c", "ppo", "bdq", "hgqn"] # ["dqn"]
+algo_list = ["bdq", "hgqn"] # ["dqn"]
 seed_list = [0,10,20]
-gpu_list = [5,5,7,7]
-reward_mode = "Baseline_OCC_PPD_with_energy"
-tradeoff_constant = 100
+gpu_list = [0,0,1,1]
+reward_mode = "Baseline_with_energy"
+tradeoff_constant = 10
 
 env_list = ["SemiPhysBuildingSim-v0"]
 time_flag = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
