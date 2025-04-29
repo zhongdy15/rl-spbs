@@ -3,8 +3,8 @@ import time
 
 algo_list = ["dqn"]
 seed_list = [0,10,20]
-gpu_list = [2]
-reward_mode = "Baseline_with_energy"
+gpu_list = [0]
+reward_mode = "Baseline_OCC_PPD_with_energy"
 tradeoff_constant = 10
 
 env_list = ["SemiPhysBuildingSim-v0"]

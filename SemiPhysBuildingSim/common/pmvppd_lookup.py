@@ -55,7 +55,7 @@ class SimplifiedPMVPPDLookup:
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
-    lookup = SimplifiedPMVPPDLookup()
+    lookup = SimplifiedPMVPPDLookup(tdb_low_bound=13,tdb_up_bound=35)
 
     plt.figure(figsize=(14, 6))
     tdb_values = lookup.tdb_range
@@ -71,28 +71,41 @@ if __name__ == '__main__':
 
         plt.subplot(1, 2, 1)
         plt.plot(tdb_values, pmv_values,
-                 label=f"{activity} (vr={lookup.vr_activity[i]}, met={lookup.met_activity[i]}, clo={lookup.clo_activity[i]})")
-        plt.axhline(y=1, color='red', linestyle='--', linewidth=1, label="Comfort Range (1, -1)" if i == 0 else "")
-        plt.axhline(y=-1, color='red', linestyle='--', linewidth=1)
-        plt.title("PMV vs Temperature")
+                 label=f"{activity}")
+                 # label=f"{activity} (vr={lookup.vr_activity[i]}, met={lookup.met_activity[i]}, clo={lookup.clo_activity[i]})")
+        plt.title("PMV under Different Activities",fontsize=15)
         plt.xlabel("Temperature (°C)")
         plt.ylabel("PMV")
-        plt.legend()
-        plt.grid(True, which='both', linestyle='--', linewidth=0.5, alpha=0.7)
+
+        plt.grid(True, which='both', linewidth=0.5, alpha=0.5)
         plt.xticks(np.arange(lookup.tdb_low_bound, lookup.tdb_up_bound + 1, 1))  # Ensure grid at each degree
+        plt.yticks(np.arange(-5, 5.1, 1))  # Ensure grid at each degree
+    plt.axhline(y=0.5, color='red', linestyle='--', linewidth=2, label="Thermal Comfort Zone")
+    plt.axhline(y=-0.5, color='red', linestyle='--', linewidth=2)
+    plt.tick_params(labelsize=10)
 
+    handles, labels = plt.gca().get_legend_handles_labels()
+    new_order = [0, 2, 1,3]  # 按照新的顺序重新排列handles和labels
+    plt.legend([handles[i] for i in new_order], [labels[i] for i in new_order],loc='upper left',prop={'size': 15})
 
+    for i, activity in enumerate(["Sitting", "Walking", "Standing"]):
+        pmv_values, ppd_values = [], []
+        for tdb in tdb_values:
+            pmv, ppd = lookup.query(tdb, i)
+            pmv_values.append(pmv)
+            ppd_values.append(ppd)
         plt.subplot(1, 2, 2)
         plt.plot(tdb_values, ppd_values,
                  label=f"{activity} (vr={lookup.vr_activity[i]}, met={lookup.met_activity[i]}, clo={lookup.clo_activity[i]})")
-        plt.axhline(y=10, color='blue', linestyle='--', linewidth=1, label="Comfort Threshold (10%)" if i == 0 else "")
-        plt.title("PPD vs Temperature")
-        plt.title("PPD vs Temperature")
+        plt.title("PPD under Different Activities",fontsize=15)
         plt.xlabel("Temperature (°C)")
         plt.ylabel("PPD (%)")
-        plt.legend()
+        # plt.legend()
         plt.grid(True, which='both', linestyle='--', linewidth=0.5, alpha=0.7)
         plt.xticks(np.arange(lookup.tdb_low_bound, lookup.tdb_up_bound + 1, 1))  # Ensure grid at each degree
-
+        plt.yticks(np.arange(0, 101, 10))  # Ensure grid at each degree
+    plt.axhline(y=10, color='red', linestyle='--', linewidth=2)
+    plt.tick_params(labelsize=10)
     plt.tight_layout()
-    plt.show()
+    # plt.show()
+    plt.savefig("pmv_ppd_lookup.pdf", dpi=300)

@@ -11,11 +11,17 @@ import torch as th
 
 # 扩增了状态空间之后的模型
 model_dict_2 = {
-                "1230_Baseline_OCC_PPD_with_energy_const10_A2C": "logs/a2c_Baseline_OCC_PPD_with_energy_10_2024-12-26-10-53-51/a2c/SemiPhysBuildingSim-v0_1",
-                "1230_Baseline_OCC_PPD_with_energy_const10_PPO": "logs/ppo_Baseline_OCC_PPD_with_energy_10_2024-12-26-10-53-51/ppo/SemiPhysBuildingSim-v0_1",
-                "1230_Baseline_OCC_PPD_with_energy_const10_BDQ": "logs/bdq_Baseline_OCC_PPD_with_energy_10_2024-12-26-10-53-51/bdq/SemiPhysBuildingSim-v0_1",
-                "1230_Baseline_OCC_PPD_with_energy_const10_HGQN": "logs/hgqn_Baseline_OCC_PPD_with_energy_10_2024-12-26-10-53-51/hgqn/SemiPhysBuildingSim-v0_1",
-                "1230_Baseline_OCC_PPD_with_energy_const10_DQN": "logs/dqn_Baseline_OCC_PPD_with_energy_10_2024-12-30-20-47-42/dqn/SemiPhysBuildingSim-v0_1",
+                "0103_Baseline_with_energy_const10_A2C": "logs/a2c_Baseline_with_energy_10_2025-01-03-16-01-15/a2c/SemiPhysBuildingSim-v0_1",
+                "0103_Baseline_with_energy_const10_PPO": "logs/ppo_Baseline_with_energy_10_2025-01-03-16-01-15/ppo/SemiPhysBuildingSim-v0_1",
+                "0103_Baseline_with_energy_const10_BDQ": "logs/bdq_Baseline_with_energy_10_2025-01-03-16-50-34/bdq/SemiPhysBuildingSim-v0_1",
+                "0103_Baseline_with_energy_const10_HGQN": "logs/hgqn_Baseline_with_energy_10_2025-01-03-16-01-15/hgqn/SemiPhysBuildingSim-v0_1",
+                "0103_Baseline_with_energy_const10_DQN": "logs/dqn_Baseline_with_energy_10_2025-01-03-16-48-57/dqn/SemiPhysBuildingSim-v0_1",
+
+                "0105_Baseline_OCC_PPD_with_energy_const10_A2C": "logs/a2c_Baseline_OCC_PPD_with_energy_10_2025-01-04-21-10-40/a2c/SemiPhysBuildingSim-v0_1",
+                "0105_Baseline_OCC_PPD_with_energy_const10_PPO": "logs/ppo_Baseline_OCC_PPD_with_energy_10_2025-01-04-21-10-40/ppo/SemiPhysBuildingSim-v0_1",
+                "0105_Baseline_OCC_PPD_with_energy_const1_BDQ": "logs/bdq_Baseline_OCC_PPD_with_energy_1_2025-01-05-11-22-08/bdq/SemiPhysBuildingSim-v0_1",
+                "0105_Baseline_OCC_PPD_with_energy_const10_HGQN": "logs/hgqn_Baseline_OCC_PPD_with_energy_10_2025-01-04-21-10-40/hgqn/SemiPhysBuildingSim-v0_1",
+                "0105_Baseline_OCC_PPD_with_energy_const10_DQN": "logs/dqn_Baseline_OCC_PPD_with_energy_10_2025-01-04-21-14-21/dqn/SemiPhysBuildingSim-v0_1",
                 }
 
 reward_mode_list = ["Baseline_without_energy",
@@ -26,15 +32,23 @@ reward_mode_list = ["Baseline_without_energy",
 algo_dict = {"ppo": PPO, "a2c": A2C, "dqn": DQN, "bdq": BDQ, "hgqn": HGQN}
 
 test_model_key_list = [
-    # "1230_Baseline_OCC_PPD_with_energy_const100_A2C",
-    # "1230_Baseline_OCC_PPD_with_energy_const100_PPO",
-    # "1230_Baseline_OCC_PPD_with_energy_const100_BDQ",
-    # "1230_Baseline_OCC_PPD_with_energy_const100_HGQN",
-    "1230_Baseline_OCC_PPD_with_energy_const10_DQN",
+    # "0105_Baseline_OCC_PPD_with_energy_const10_A2C",
+    # "0105_Baseline_OCC_PPD_with_energy_const10_PPO",
+    "0105_Baseline_OCC_PPD_with_energy_const1_BDQ",
+    "0105_Baseline_OCC_PPD_with_energy_const10_HGQN",
+    # "0105_Baseline_OCC_PPD_with_energy_const10_DQN",
 ]
 
+# test_model_key_list = [
+#                 # "0103_Baseline_with_energy_const10_A2C",
+#                 # "0103_Baseline_with_energy_const10_PPO",
+#                 # "0103_Baseline_with_energy_const10_BDQ",
+#                 # "0103_Baseline_with_energy_const10_HGQN",
+#                 "0103_Baseline_with_energy_const10_DQN",
+# ]
 
-save_folder = "figure/0103_4levels/"
+
+save_folder = "figure/0105_4levels_const10_OCC/"
 
 
 if not os.path.exists(save_folder):
@@ -86,7 +100,7 @@ for model_key in test_model_key_list:
             #     action = model.policy.q_net._predict_with_disabled_action(model.policy.obs_to_tensor(obs)[0])\
             #         .cpu().numpy().reshape((-1,) + model.action_space.shape).squeeze(axis=0)
             action, _state = model.predict(obs)
-            print("action: " + str(action))
+            # print("action: " + str(action))
             # action = env1.action_space.sample()
             # action = np.array(action)
             # action = 127
