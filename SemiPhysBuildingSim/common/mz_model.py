@@ -23,7 +23,7 @@ class ZONE():
         self.name = name
         self.area = area         #  m2
         self.volume = area * 3   #  m3
-        self.temp = 26.5   #  oC
+        self.temp = 18.0   #  oC
         self.temp_set = 24.0
         self.RH = 40.0
         self.RH_set = 70.0
@@ -181,7 +181,7 @@ class FCU():
         self.Qc_M = Qc_M / 1000
         self.Qc_L = Qc_L / 1000
         self.mode_set = 1
-        self.mode = 1            # 1-cooling   2-heating
+        self.mode = 2            # 1-cooling   2-heating
         self.power_basic = Power_basic / 1000           # fan power at H,  kw
         self.waterflow_basic = waterflow_basic / 1000   #  m3/h
         self.Qh_tw_supply = 60
