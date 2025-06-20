@@ -23,7 +23,7 @@ class ZONE():
         self.name = name
         self.area = area         #  m2
         self.volume = area * 3   #  m3
-        self.temp = 20.0   #  oC
+        self.temp = 16.0   #  oC
         self.temp_set = 24.0
         self.RH = 40.0
         self.RH_set = 70.0
@@ -75,7 +75,8 @@ class ZONE():
             sheet_dict = {'room1': 'Sheet1', 'room2': 'Sheet2', 'room3': 'Sheet3', 'room4': 'Sheet1',
                           'room5': 'Sheet2', 'room6': 'Sheet3', 'room7': 'Sheet1', 'room8': 'Sheet2', }
 
-            path = f"SemiPhysBuildingSim/human_activity_data/final_with_min_sampled_manual.xlsx"
+            # path = f"SemiPhysBuildingSim/human_activity_data/final_with_min_sampled_manual.xlsx"
+            path = f"SemiPhysBuildingSim/human_activity_data/generated_winter_person.xlsx"
             # 读取 Excel 文件
             import pandas as pd
             df = pd.read_excel(path, sheet_name=sheet_dict[self.name])

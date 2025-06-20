@@ -620,7 +620,7 @@ class SemiPhysBuildingSimulation(gym.core.Env):
     def simulator_initialize(self):
         # Initialization
         # Time
-        self.init_time = 0 #5289  # August 9th 9:00am
+        self.init_time = 2673 #5289  #5289 = August 9th 9:00am  # 索引 2673 = 4月22日 9:00am
         self.step_hour = self.init_time
         self.T_delta = 6  # Real time interval for 1 min simulation
         self.T_con_fcu = 5  # Time interval for fcu control in simulation, min
