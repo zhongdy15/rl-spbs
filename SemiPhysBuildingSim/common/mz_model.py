@@ -23,7 +23,7 @@ class ZONE():
         self.name = name
         self.area = area         #  m2
         self.volume = area * 3   #  m3
-        self.temp = 18.0   #  oC
+        self.temp = 20.0   #  oC
         self.temp_set = 24.0
         self.RH = 40.0
         self.RH_set = 70.0
