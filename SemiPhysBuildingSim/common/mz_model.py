@@ -23,8 +23,8 @@ class ZONE():
         self.name = name
         self.area = area         #  m2
         self.volume = area * 3   #  m3
-        self.temp = 26.5  #  oC
-        self.temp_set = 24.0
+        self.temp = 26.5 #16  #  oC
+        self.temp_set = 26.5
         self.RH = 40.0
         self.RH_set = 70.0
         self.d = 5.11    #  g/kg(dry air)
@@ -32,7 +32,7 @@ class ZONE():
         self.leakage_area = 0.0   #  m2
         self.wall_area = [0, 0, 0, 0]   #  N, W, S, E, Roof
         self.rou = 1.293 * (273.15 / (self.temp + 273.15))
-        self.sup_temp = 14
+        self.sup_temp = 14 #40
         self.sup_airflow = 0.         #  m3/min
         self.return_airflow = 0.      #  m3/min
         self.fan_position = 0
@@ -75,8 +75,8 @@ class ZONE():
             sheet_dict = {'room1': 'Sheet1', 'room2': 'Sheet2', 'room3': 'Sheet3', 'room4': 'Sheet1',
                           'room5': 'Sheet2', 'room6': 'Sheet3', 'room7': 'Sheet1', 'room8': 'Sheet2', }
 
-            # path = f"SemiPhysBuildingSim/human_activity_data/final_with_min_sampled_manual.xlsx"
-            path = f"SemiPhysBuildingSim/human_activity_data/generated_winter_person.xlsx"
+            path = f"SemiPhysBuildingSim/human_activity_data/final_with_min_sampled_manual.xlsx"
+            # path = f"SemiPhysBuildingSim/human_activity_data/generated_winter_person.xlsx"
             # 读取 Excel 文件
             import pandas as pd
             df = pd.read_excel(path, sheet_name=sheet_dict[self.name])
@@ -336,9 +336,9 @@ class HEATPUMP():
     def __init__(self):
         self.name = 'heatpump'
         self.onoff = 0
-        self.mode = 1
-        self.supplytemp = 7.0
-        self.supply_tempset = 7.0
+        self.mode = 2
+        self.supplytemp = 60.0
+        self.supply_tempset = 60.0
 
         # ALarm
         self.flow_alarm = 0

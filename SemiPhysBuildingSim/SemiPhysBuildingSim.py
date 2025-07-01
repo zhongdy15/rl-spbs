@@ -862,8 +862,8 @@ if __name__ == "__main__":
         while not done:
             # print(str(i) + "th obs: " + str(obs))
             i += 1
-            action = [3, 3, 3, 3, 3, 3, 3]  #
-            # action = [0,0,0, 0, 0, 0, 0]#[3,3,3, 3, 3, 3, 3]#env1.action_space.sample()
+            # action = [3, 3, 3, 3, 3, 3, 3]  #
+            action = [0,0,0, 0, 0, 0, 0]#[3,3,3, 3, 3, 3, 3]#env1.action_space.sample()
             print(action)
             obs, r, done, info = env1.step(action)
             # print("action:"+str(action))
