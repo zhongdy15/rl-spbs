@@ -620,7 +620,7 @@ class SemiPhysBuildingSimulation(gym.core.Env):
     def simulator_initialize(self):
         # Initialization
         # Time
-        self.init_time = 7449 #5289  #5289 = August 9th 9:00am  # 索引 2673 = 4月22日 9:00am #11月7日 9:00am = 第 7449 小时 = 索引 7449
+        self.init_time = 5289 #5289  #5289 = August 9th 9:00am  # 索引 2673 = 4月22日 9:00am #11月7日 9:00am = 第 7449 小时 = 索引 7449
         self.step_hour = self.init_time
         self.T_delta = 6  # Real time interval for 1 min simulation
         self.T_con_fcu = 5  # Time interval for fcu control in simulation, min
@@ -854,7 +854,7 @@ if __name__ == "__main__":
     # done = False
     # i = 0
 
-    for _ in range(10):
+    for _ in range(1):
         obs = env1.reset()
         rewards = 0
         done = False
@@ -862,7 +862,9 @@ if __name__ == "__main__":
         while not done:
             # print(str(i) + "th obs: " + str(obs))
             i += 1
-            action = env1.action_space.sample()
+            action = [3, 3, 3, 3, 3, 3, 3]  #
+            # action = [0,0,0, 0, 0, 0, 0]#[3,3,3, 3, 3, 3, 3]#env1.action_space.sample()
+            print(action)
             obs, r, done, info = env1.step(action)
             # print("action:"+str(action))
             # if i >= 100:
