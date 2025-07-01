@@ -23,8 +23,8 @@ class ZONE():
         self.name = name
         self.area = area         #  m2
         self.volume = area * 3   #  m3
-        self.temp = 26.5 #16  #  oC
-        self.temp_set = 26.5
+        self.temp = 16  #  oC
+        self.temp_set = 16
         self.RH = 40.0
         self.RH_set = 70.0
         self.d = 5.11    #  g/kg(dry air)
@@ -32,7 +32,7 @@ class ZONE():
         self.leakage_area = 0.0   #  m2
         self.wall_area = [0, 0, 0, 0]   #  N, W, S, E, Roof
         self.rou = 1.293 * (273.15 / (self.temp + 273.15))
-        self.sup_temp = 14 #40
+        self.sup_temp = 40 # 14 summer / 40 winter
         self.sup_airflow = 0.         #  m3/min
         self.return_airflow = 0.      #  m3/min
         self.fan_position = 0
@@ -75,8 +75,8 @@ class ZONE():
             sheet_dict = {'room1': 'Sheet1', 'room2': 'Sheet2', 'room3': 'Sheet3', 'room4': 'Sheet1',
                           'room5': 'Sheet2', 'room6': 'Sheet3', 'room7': 'Sheet1', 'room8': 'Sheet2', }
 
-            path = f"SemiPhysBuildingSim/human_activity_data/final_with_min_sampled_manual.xlsx"
-            # path = f"SemiPhysBuildingSim/human_activity_data/generated_winter_person.xlsx"
+            # path = f"SemiPhysBuildingSim/human_activity_data/final_with_min_sampled_manual.xlsx"
+            path = f"SemiPhysBuildingSim/human_activity_data/generated_winter_person.xlsx"
             # 读取 Excel 文件
             import pandas as pd
             df = pd.read_excel(path, sheet_name=sheet_dict[self.name])
@@ -181,8 +181,8 @@ class FCU():
         self.Qc_H = Qc_H / 1000  # Q cooling,  kw
         self.Qc_M = Qc_M / 1000
         self.Qc_L = Qc_L / 1000
-        self.mode_set = 1
-        self.mode = 1            # 1-cooling   2-heating
+        self.mode_set = 2
+        self.mode = 2            # 1-cooling   2-heating
         self.power_basic = Power_basic / 1000           # fan power at H,  kw
         self.waterflow_basic = waterflow_basic / 1000   #  m3/h
         self.Qh_tw_supply = 60

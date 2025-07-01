@@ -3,7 +3,7 @@ import time
 
 algo_list = ["hgqn"] # ["dqn"]
 seed_list = [0,10,20,30,40]
-gpu_list = [0,1,2,3]
+gpu_list = [4,5,6,7]
 
 reward_mode = "Baseline_OCC_PPD_with_energy"
 tradeoff_constant_list = [0,1,10,100]
