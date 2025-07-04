@@ -2,8 +2,8 @@ import os
 import time
 
 algo_list = ["dqn"]
-seed_list = [0,10,20]
-gpu_list = [0]
+seed_list = [0,10,20,30,40]
+gpu_list = [3]
 reward_mode = "Baseline_OCC_PPD_with_energy"
 tradeoff_constant = 10
 
