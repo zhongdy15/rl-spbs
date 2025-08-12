@@ -25,7 +25,10 @@ model_dict_2 = {
                 }
 
 
-model_dict_3 = {"0429_Baseline_with_energy_const10_BDQ": "logs/bdq_Baseline_OCC_PPD_with_energy_10_2025-04-29-11-02-50/bdq/SemiPhysBuildingSim-v0_1",}
+model_dict_3 = {"0429_Baseline_OCC_PPD_with_energy_const10_A2C": "logs/a2c_Baseline_OCC_PPD_with_energy_10_2025-04-29-11-04-16/a2c/SemiPhysBuildingSim-v0_1",
+                "0429_Baseline_OCC_PPD_with_energy_const10_HGQN": "logs/hgqn_Baseline_OCC_PPD_with_energy_10_2025-04-29-11-03-43/hgqn/SemiPhysBuildingSim-v0_1",
+                "0429_Baseline_OCC_PPD_with_energy_const10_BDQ": "logs/bdq_Baseline_OCC_PPD_with_energy_10_2025-04-29-11-02-50/bdq/SemiPhysBuildingSim-v0_1",
+                "0429_Baseline_OCC_PPD_with_energy_const10_PPO": "logs/ppo_Baseline_OCC_PPD_with_energy_10_2025-04-29-10-59-46/ppo/SemiPhysBuildingSim-v0_1",}
 
 model_dict_3_2 = {"0612_Baseline_OCC_PPD_with_energy_const10_A2C": "logs/a2c_Baseline_OCC_PPD_with_energy_10_2025-06-12-20-09-42/a2c/SemiPhysBuildingSim-v0_1",
                 "0612_Baseline_OCC_PPD_with_energy_const10_PPO": "logs/ppo_Baseline_OCC_PPD_with_energy_10_2025-06-12-20-09-42/ppo/SemiPhysBuildingSim-v0_1",
@@ -91,7 +94,7 @@ model_dict_12 = {"0702_Baseline_OCC_PPD_with_energy_const10_A2C": "logs/a2c_Base
                 "0702_Baseline_OCC_PPD_with_energy_const10_HGQN": "logs/hgqn_Baseline_OCC_PPD_with_energy_10_2025-07-01-23-37-34/hgqn/SemiPhysBuildingSim-v0_1",
                 "0702_Baseline_OCC_PPD_with_energy_const10_DQN": "logs/dqn_Baseline_OCC_PPD_with_energy_10_2025-07-01-23-40-33/dqn/SemiPhysBuildingSim-v0_1",}
 
-model_dict_2 = model_dict_3_2
+model_dict_2 = model_dict_3
 
 reward_mode_list = ["Baseline_without_energy",
                     "Baseline_with_energy",
@@ -101,28 +104,15 @@ reward_mode_list = ["Baseline_without_energy",
 algo_dict = {"ppo": PPO, "a2c": A2C, "dqn": DQN, "bdq": BDQ, "hgqn": HGQN}
 
 test_model_key_list = [
-    "0612_Baseline_OCC_PPD_with_energy_const10_A2C",
-                "0612_Baseline_OCC_PPD_with_energy_const10_PPO",
-                "0612_Baseline_OCC_PPD_with_energy_const1_BDQ",
-                "0612_Baseline_OCC_PPD_with_energy_const10_HGQN",
+    "0429_Baseline_OCC_PPD_with_energy_const10_A2C",
+                "0429_Baseline_OCC_PPD_with_energy_const10_PPO",
+                "0429_Baseline_OCC_PPD_with_energy_const10_BDQ",
+                "0429_Baseline_OCC_PPD_with_energy_const10_HGQN",
                 # "0612_Baseline_OCC_PPD_with_energy_const10_DQN"
 ]
 
-# {"0612_Baseline_OCC_PPD_with_energy_const10_A2C": "logs/a2c_Baseline_OCC_PPD_with_energy_10_2025-06-12-20-09-42/a2c/SemiPhysBuildingSim-v0_1",
-#                 "0612_Baseline_OCC_PPD_with_energy_const10_PPO": "logs/ppo_Baseline_OCC_PPD_with_energy_10_2025-06-12-20-09-42/ppo/SemiPhysBuildingSim-v0_1",
-#                 "0612_Baseline_OCC_PPD_with_energy_const1_BDQ": "logs/bdq_Baseline_OCC_PPD_with_energy_10_2025-06-12-20-09-42/bdq/SemiPhysBuildingSim-v0_1",
-#                 "0612_Baseline_OCC_PPD_with_energy_const10_HGQN": "logs/hgqn_Baseline_OCC_PPD_with_energy_10_2025-06-12-20-09-42/hgqn/SemiPhysBuildingSim-v0_1",
-#                 "0612_Baseline_OCC_PPD_with_energy_const10_DQN": "logs/dqn_Baseline_OCC_PPD_with_energy_10_2025-06-12-20-13-39/dqn/SemiPhysBuildingSim-v0_1",}
-# test_model_key_list = [
-#                 # "0103_Baseline_with_energy_const10_A2C",
-#                 # "0103_Baseline_with_energy_const10_PPO",
-#                 # "0103_Baseline_with_energy_const10_BDQ",
-#                 # "0103_Baseline_with_energy_const10_HGQN",
-#                 "0103_Baseline_with_energy_const10_DQN",
-# ]
 
-
-save_folder = "figure/0702_plot_energy/"
+save_folder = "figure/0709_data_recover/"
 
 
 if not os.path.exists(save_folder):
