@@ -13,7 +13,7 @@ from openai import OpenAI
 try:
     client = OpenAI(
         api_key="not-needed-for-local",
-        base_url="http://172.22.23.19:8000/v1"
+        base_url="http://localhost:8000/v1"
     )
     print("Successfully initialized OpenAI client for local server.")
 except Exception as e:
@@ -171,7 +171,7 @@ while not done:
         print("------------------------------------------")
 
     llm_response = call_llm_api(prompt)
-    action = response2action(llm_response)
+    action = parse_llm_response_to_array(llm_response)
 
     print(f"Step {i}: LLM Response -> '{llm_response[:80]}...', Parsed Action -> {action}")
 

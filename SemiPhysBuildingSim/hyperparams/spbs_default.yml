@@ -4,7 +4,7 @@ reference:
   PI: 3.14
   g: 9.8
   Rc: 287.042
-  max_iter: 100
+  max_iter: 10
   indoor_air_velocity: 0.15
   sup_temp: 14.0
 
