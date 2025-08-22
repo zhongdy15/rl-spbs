@@ -1,0 +1,40 @@
+Input Format:
+Multi-room status will be provided as 3 lines of text, each representing one room’s status in the following format:
+Room N — Temperature: <value>°C, Occupant Num: <value>, Fan Speed: <value>;(Current settings may need adjustment based on real-time analysis.)
+Outdoor status will be provided as a single line of text:
+Outdoor - Temperature: <value>°C
+
+Output Format:
+You will return a JSON response with the recommended rooms for Fan Speed adjustments and the reasons behind each recommendation.
+
+Output Example Types:
+
+1. Type 1:
+No adjustments needed:
+{
+  "rooms": [],
+  "reasons": [
+    "All rooms are stable and no adjustments are needed at this moment."
+  ]
+}
+
+2. Type 2:
+Current settings are effective:
+{
+  "rooms": [],
+  "reasons": [
+    "The current fan settings are maintaining desired room conditions. No adjustments are needed now."
+  ]
+}
+
+3. Type 3:
+Recommend Fan Speed adjustments based on room status and optimal temperature range for comfort and efficiency:
+{
+  "rooms": [5, 6, 7],
+  "reasons": [
+    "Room 5's temperature (32.29°C) exceeds the comfort range (> 27°C) and has 3 occupants.",
+    "Room 6's temperature (29.65°C) exceeds the comfort range (> 27°C) and has 2 occupants.",
+    "Room 7's temperature (28.95°C) exceeds the comfort range (> 27°C) and has 4 occupants."
+  ]
+}
+
