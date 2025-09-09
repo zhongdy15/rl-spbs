@@ -5,36 +5,31 @@ Outdoor status will be provided as a single line of text:
 Outdoor - Temperature: <value>°C
 
 Output Format:
-You will return a JSON response with the recommended rooms for Fan Speed adjustments and the reasons behind each recommendation.
+You will return a JSON array of objects. Each object will represent a room and its associated confidence score (a float between 0 and 1) indicating how strongly it should be considered for a Fan Speed adjustment. A higher score means a stronger recommendation for adjustment.
+
 
 Output Example Types:
 
-1. Type 1:
-No adjustments needed:
-{
-  "rooms": [],
-  "reasons": [
-    "All rooms are stable and no adjustments are needed at this moment."
-  ]
-}
+1. All rooms are stable and no adjustments are needed:
+[
+ {"room_id": 1, "confidence_to_adjust": 0.05},
+ {"room_id": 2, "confidence_to_adjust": 0.03},
+ {"room_id": 3, "confidence_to_adjust": 0.04},
+ {"room_id": 4, "confidence_to_adjust": 0.06},
+ {"room_id": 5, "confidence_to_adjust": 0.02},
+ {"room_id": 6, "confidence_to_adjust": 0.07},
+ {"room_id": 7, "confidence_to_adjust": 0.05}
+]
 
-2. Type 2:
-Current settings are effective:
-{
-  "rooms": [],
-  "reasons": [
-    "The current fan settings are maintaining desired room conditions. No adjustments are needed now."
-  ]
-}
+2. Some rooms require strong consideration for adjustment:
+[
+ {"room_id": 1, "confidence_to_adjust": 0.1},
+ {"room_id": 2, "confidence_to_adjust": 0.2},
+ {"room_id": 3, "confidence_to_adjust": 0.95}, // Room 3 strongly needs adjustment
+ {"room_id": 4, "confidence_to_adjust": 0.15},
+ {"room_id": 5, "confidence_to_adjust": 0.88}, // Room 5 strongly needs adjustment
+ {"room_id": 6, "confidence_to_adjust": 0.3},
+ {"room_id": 7, "confidence_to_adjust": 0.08}
+]
 
-3. Type 3:
-Recommend Fan Speed adjustments based on room status and optimal temperature range for comfort and efficiency:
-{
-  "rooms": [5, 6, 7],
-  "reasons": [
-    "Room 5's temperature (32.29°C) exceeds the comfort range (> 27°C) and has 3 occupants.",
-    "Room 6's temperature (29.65°C) exceeds the comfort range (> 27°C) and has 2 occupants.",
-    "Room 7's temperature (28.95°C) exceeds the comfort range (> 27°C) and has 4 occupants."
-  ]
-}
 
