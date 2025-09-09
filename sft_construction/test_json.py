@@ -11,7 +11,7 @@ try:
         print("JSON文件为空或没有数据。")
     else:
         # 获取第一条数据，根据您的JSON结构，是 data[0]
-        first_entry = data[0]
+        first_entry = data[10]
 
         # 构造 prompt
         prompt = f"{first_entry['system']}\n{first_entry['instruction']}\n{first_entry['input']}"

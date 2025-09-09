@@ -29,7 +29,7 @@ class SemiPhysBuildingSimulation(gym.core.Env):
     def __init__(self,
                  hyperparams=None,
                  hyperparams_path='SemiPhysBuildingSim/hyperparams/spbs_default.yml',
-                 reward_mode = "Baseline_OCC_PPD_without_energy",
+                 reward_mode = "Baseline_OCC_PPD_with_energy",
                  tradeoff_constant = 100,
                  eval_mode=False,):
         # Read from hyperparams or hyperparams_path
