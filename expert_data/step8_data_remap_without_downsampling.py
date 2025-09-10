@@ -87,8 +87,8 @@ def remap_room_data_files(source_dir: str = "expert_data_augment",
 # 示例用法：
 if __name__ == "__main__":
     # --- 设置示例文件和目录 ---
-    source_folder = "expert_data_downsampling"
-    output_folder = "expert_data_remap"
+    source_folder = "expert_data_augment"
+    output_folder = "expert_data_remap_without_downsampling"
 
     # 清理旧的输出目录（可选，方便测试）
     if os.path.exists(output_folder):

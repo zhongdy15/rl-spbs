@@ -121,8 +121,8 @@ if __name__ == "__main__":
     target_dates = [7, 9, 10, 11, 12, 13, 14, 16, 17, 18, 20, 21]
 
     # 定义数据源文件夹和图片保存文件夹
-    data_source_folder = "expert_data_downsampling" #"expert_data_augment"
-    output_images_folder = "expert_data_replot_from_downsampling"
+    data_source_folder = "expert_data_remap_without_downsampling" #"expert_data_augment"
+    output_images_folder = "expert_data_replot_from_remap_without_downsampling"
 
     # 创建图片保存文件夹（如果不存在）
     os.makedirs(output_images_folder, exist_ok=True)
