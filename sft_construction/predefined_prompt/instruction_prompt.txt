@@ -1,35 +1,31 @@
 Input Format:
-Multi-room status will be provided as 3 lines of text, each representing one room’s status in the following format:
-Room N — Temperature: <value>°C, Occupant Num: <value>, Fan Speed: <value>;(Current settings may need adjustment based on real-time analysis.)
-Outdoor status will be provided as a single line of text:
+You will be provided with real-time status at the current moment (T), and also the status from 5 minutes ago (T-5min).
+
+Current Status (at Time T, FCU Fan Speed was active from T-5min to T):
+Room N — Temperature: <value>°C, Occupant Num: <value>, Fan Speed: <value>;
+Outdoor - Temperature: <value>°C
+
+Status 5 minutes ago (at Time T-5min, FCU Fan Speed was active from T-10min to T-5min):
+Room N — Temperature: <value>°C, Occupant Num: <value>, Fan Speed: <value>;
 Outdoor - Temperature: <value>°C
 
 Output Format:
-You will return a JSON array of objects. Each object will represent a room and its associated confidence score (a float between 0 and 1) indicating how strongly it should be considered for a Fan Speed adjustment. A higher score means a stronger recommendation for adjustment.
-
+You will return a JSON object containing two fields:
+1. "confidence_scores": A list of float values (between 0 and 1). Each float represents the confidence score for a corresponding room (ordered by room_id from 1 to 7) indicating how strongly it should be considered for a Fan Speed adjustment for the next 5-minute interval (T to T+5min). A higher score means a stronger recommendation for adjustment.
+2. "explanation_and_thought_process": A string containing a detailed explanation of the reasoning behind the confidence scores for each room, including all model's thought processes.
 
 Output Example Types:
 
 1. All rooms are stable and no adjustments are needed:
-[
- {"room_id": 1, "confidence_to_adjust": 0.05},
- {"room_id": 2, "confidence_to_adjust": 0.03},
- {"room_id": 3, "confidence_to_adjust": 0.04},
- {"room_id": 4, "confidence_to_adjust": 0.06},
- {"room_id": 5, "confidence_to_adjust": 0.02},
- {"room_id": 6, "confidence_to_adjust": 0.07},
- {"room_id": 7, "confidence_to_adjust": 0.05}
-]
+{
+  "confidence_scores": [0.05, 0.03, 0.04, 0.06, 0.02, 0.07, 0.05],
+  "explanation_and_thought_process": "All rooms currently show stable temperatures within the optimal range of 25-27°C, with minimal changes in occupant numbers or fan speed effectiveness. Therefore, the confidence scores for adjustment are very low across all rooms, indicating no immediate need for fan speed changes to maintain occupant comfort and energy efficiency. The system aims for minimal intervention when conditions are stable."
+}
 
 2. Some rooms require strong consideration for adjustment:
-[
- {"room_id": 1, "confidence_to_adjust": 0.1},
- {"room_id": 2, "confidence_to_adjust": 0.2},
- {"room_id": 3, "confidence_to_adjust": 0.95}, // Room 3 strongly needs adjustment
- {"room_id": 4, "confidence_to_adjust": 0.15},
- {"room_id": 5, "confidence_to_adjust": 0.88}, // Room 5 strongly needs adjustment
- {"room_id": 6, "confidence_to_adjust": 0.3},
- {"room_id": 7, "confidence_to_adjust": 0.08}
-]
+{
+  "confidence_scores": [0.1, 0.2, 0.95, 0.15, 0.88, 0.3, 0.08],
+  "explanation_and_thought_process": "Room 3 and Room 5 show high confidence scores due to significant deviations from the optimal temperature range and/or notable changes in occupancy combined with insufficient current fan speeds. For example, Room 3's temperature is rising with new occupants and a low fan speed, while Room 5 is critically hot despite a low fan speed. Other rooms are relatively stable or show minor deviations that do not yet warrant strong adjustment recommendations, considering the balance between comfort and energy efficiency."
+}
 
 
