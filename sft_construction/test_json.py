@@ -3,7 +3,7 @@ import json
 
 try:
     # 实际场景中，你会这样加载文件：
-    with open('all_types_sft_data_v7/type3_adjusted.json', 'r', encoding='utf-8') as f:
+    with open('all_types_sft_data_v8_1min_interval/type3_adjusted.json', 'r', encoding='utf-8') as f:
         data = json.load(f)
 
     # 检查数据是否为空
