@@ -5,6 +5,8 @@ import csv
 import numpy as np
 import csv
 
+Room_Remap = True
+
 class ZONE():
     def __init__(self, name, area, occ_list_length,hyperparams, Itd):
         # Constants
@@ -130,12 +132,20 @@ class ZONE():
         # print("name:" + self.name + " G_fan:" + str(G_fan))
 
         G_fan_origin = G_fan
-        if self.name == "room4":
-            G_fan = 0.5 * G_fan_origin + 0.3*all_G_fan[4] + 0.2*all_G_fan[5]
-        if self.name == "room5":
-            G_fan = 0.5 * G_fan_origin + 0.25*all_G_fan[3] + 0.25*all_G_fan[5]
-        if self.name == "room6":
-            G_fan = 0.5 * G_fan_origin + 0.2*all_G_fan[3] + 0.3*all_G_fan[4]
+        if Room_Remap:
+            if self.name == "room5":
+                G_fan = 0.5 * G_fan_origin + 0.3 * all_G_fan[5] + 0.2 * all_G_fan[6]
+            if self.name == "room6":
+                G_fan = 0.5 * G_fan_origin + 0.25 * all_G_fan[4] + 0.25 * all_G_fan[6]
+            if self.name == "room7":
+                G_fan = 0.5 * G_fan_origin + 0.2 * all_G_fan[4] + 0.3 * all_G_fan[5]
+        else:
+            if self.name == "room4":
+                G_fan = 0.5 * G_fan_origin + 0.3*all_G_fan[4] + 0.2*all_G_fan[5]
+            if self.name == "room5":
+                G_fan = 0.5 * G_fan_origin + 0.25*all_G_fan[3] + 0.25*all_G_fan[5]
+            if self.name == "room6":
+                G_fan = 0.5 * G_fan_origin + 0.2*all_G_fan[3] + 0.3*all_G_fan[4]
 
 
         self.Qa_0 = c * rou * G_fan/60 * (self.sup_temp - self.temp)

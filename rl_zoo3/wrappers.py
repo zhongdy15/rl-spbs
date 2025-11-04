@@ -311,3 +311,65 @@ class MaskVelocityWrapper(gym.ObservationWrapper):
 
     def observation(self, observation: np.ndarray) -> np.ndarray:
         return observation * self.mask
+
+
+class ObsHistoryWrapper(gym.Wrapper):
+    """
+    Stack past observations to give a history to the agent.
+
+    :param env: The environment to wrap.
+    :param horizon: Number of steps to keep in the history for observations.
+    """
+
+    def __init__(self, env: gym.Env, horizon: int = 2):
+        assert isinstance(env.observation_space, spaces.Box), "HistoryWrapper only supports Box observation spaces."
+
+        wrapped_obs_space = env.observation_space
+
+        # Calculate low and high for the stacked observations
+        # The new observation space will be the original observation space stacked 'horizon' times.
+        low_obs = np.repeat(wrapped_obs_space.low, horizon, axis=-1)
+        high_obs = np.repeat(wrapped_obs_space.high, horizon, axis=-1)
+
+        # Overwrite the observation space to only include stacked observations
+        env.observation_space = spaces.Box(low=low_obs, high=high_obs, dtype=wrapped_obs_space.dtype)
+
+        super().__init__(env)
+
+        self.horizon = horizon
+        self.obs_history = np.zeros(low_obs.shape, dtype=low_obs.dtype)  # Initialize observation history
+
+    def _create_obs_from_history(self):
+        """
+        Concatenates the current observation history to form the new observation.
+        """
+        return self.obs_history
+
+    def reset(self):
+        # Flush the history with zeros
+        self.obs_history[...] = 0
+        obs = self.env.reset()
+
+        # Place the initial observation at the end of the history buffer
+        last_obs_dim = obs.shape[-1]
+        self.obs_history[..., -last_obs_dim:] = obs
+        return self._create_obs_from_history()
+
+    def step(self, action):
+        """
+        Takes a step in the environment and updates the observation history.
+        """
+        obs, reward, done, info = self.env.step(action)
+
+        # Calculate the dimension of a single observation
+        last_obs_dim = obs.shape[-1]
+
+        # Shift the history to the left (discarding the oldest observation)
+        self.obs_history = np.roll(self.obs_history, shift=-last_obs_dim, axis=-1)
+
+        # Place the new observation at the end of the history buffer
+        self.obs_history[..., -last_obs_dim:] = obs
+
+        # Return the new observation (current history), reward, done status, and info
+        return self._create_obs_from_history(), reward, done, info
+

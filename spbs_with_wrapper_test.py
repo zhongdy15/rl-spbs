@@ -3,7 +3,7 @@ import SemiPhysBuildingSim
 import gym
 import numpy as np
 import matplotlib.pyplot as plt
-from rl_zoo3.wrappers import FrameSkip
+from rl_zoo3.wrappers import FrameSkip, ObsHistoryWrapper
 import os
 import datetime
 import os # 导入 os 模块来创建文件夹
@@ -23,6 +23,8 @@ env1 = gym.make("SemiPhysBuildingSim-v0",
                 reward_mode=reward_mode,
                 tradeoff_constant=tradeoff_constant,
                 eval_mode=True)
+
+env1 = ObsHistoryWrapper(env1, horizon=frame_skip)
 env1 = FrameSkip(env1, skip=frame_skip)
 print("Frame skip: " + str(frame_skip))
 
@@ -37,10 +39,10 @@ for _ in range(1):
         # action , _state = model.predict(obs)
         # action = env1.action_space.sample()
         # action = np.array(action)
-        action = [0, 0, 0, 0, 3, 0, 0]
+        action = [0, 0, 0, 0, 0, 0, 3]
         action = np.array(action)
         action_list.append(action)
-        print(action)
+        print("Step " + str(i) + " action:" + str(action))
         obs, r, done, info = env1.step(action)
         rewards += r
     print("rewards:" + str(rewards))

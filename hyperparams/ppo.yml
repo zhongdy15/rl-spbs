@@ -555,6 +555,8 @@ SemiPhysBuildingSim-v0:
   env_wrapper:
     - rl_zoo3.wrappers.FrameSkip:
         skip: 5
+    - rl_zoo3.wrappers.ObsHistoryWrapper:
+        horizon: 5
   n_envs: 8
   n_timesteps: !!float 5e5
   policy: 'MlpPolicy'
