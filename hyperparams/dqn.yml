@@ -83,6 +83,9 @@ Acrobot-v1:
 
 SemiPhysBuildingSim-v0:
   env_wrapper:
+# 先添加历史观测包装器，再添加帧跳包装器，这样可以确保每个时间步都有完整的历史观测，而不是只跳帧而不记录历史。
+    - rl_zoo3.wrappers.ObsHistoryWrapper:
+          horizon: 5
     - rl_zoo3.wrappers.FrameSkip:
         skip: 5
   n_timesteps: !!float 5e5

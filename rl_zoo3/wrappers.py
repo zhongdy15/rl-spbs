@@ -342,6 +342,7 @@ class ObsHistoryWrapper(gym.Wrapper):
     def _create_obs_from_history(self):
         """
         Concatenates the current observation history to form the new observation.
+        self.obs_history 数组的结构是：[最旧的观测 | 较旧的观测 | ... | 较新的观测 | 最新的观测]
         """
         return self.obs_history
 
