@@ -13,7 +13,7 @@ from .common.mz_model import ZONE, FCU, PUMP, HEATPUMP
 from sympy import Matrix
 
 # False # True #
-USE_Multi_Discrete = False #
+USE_Multi_Discrete = True #
 if USE_Multi_Discrete:
     from .common.action_transformation_multi_discrete import available_action_set, create_action_space, \
         map_action_to_controls, map_controls_to_action
@@ -82,7 +82,7 @@ class SemiPhysBuildingSimulation(gym.core.Env):
                                      "room6": room_state_keys,
                                      "room7": room_state_keys,
                                      }
-        obs_shape = 4*7 + 1 + 3*7
+        obs_shape = 4*7 + 1 + 1*7
 
         self.observation_space = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(obs_shape,), dtype=np.float32)
 
@@ -760,41 +760,43 @@ class SemiPhysBuildingSimulation(gym.core.Env):
         return total_energy_consumption
 
     def get_pmv_ppd_from_datarecorder(self):
-        # 判断self是否包含pmvppd_lookup，如果没有，则构造
+        # 1. 判断并构造查找表（这部分逻辑不变）
         if not hasattr(self, 'pmvppd_lookup'):
             self.construct_pmvppd_lookup()
 
+        # 2. 获取新的、简化后的人数和温度数据
+        # occupant_num_vec 原来是 (21,) 向量，现在是 (7,) 向量
         occupant_num_vec = get_latest_observation_from_every_room(self.data_recorder, "occupant_num")
-        occupant_activities_num = occupant_num_vec.reshape(7, 3)
+        # occupant_activities_num = occupant_num_vec.reshape(7, 3) # <--- 不再需要这行
 
         room_temp = get_latest_observation_from_every_room(self.data_recorder, "room_temp")
 
-        # from pythermalcomfort.models import pmv_ppd
-        pmv_matrix = np.zeros_like(occupant_activities_num, dtype=float)
-        ppd_matrix = np.zeros_like(occupant_activities_num, dtype=float)
+        # 3. 初始化PMV和PPD向量（不再是矩阵）
+        # pmv_matrix = np.zeros_like(occupant_activities_num, dtype=float) # <--- 旧代码
+        # ppd_matrix = np.zeros_like(occupant_activities_num, dtype=float) # <--- 旧代码
+        pmv_vec = np.zeros_like(room_temp, dtype=float)  # 长度为7
+        ppd_vec = np.zeros_like(room_temp, dtype=float)  # 长度为7
 
-        # Calculate PMV and PPD for each room and each occupant activity
+        # 4. 简化计算过程
+        # 假设“坐着”是活动索引 0
+        sitting_activity_index = 0
+
+        # 遍历7个房间，不再需要遍历活动
         for i in range(7):
-            for j in range(3):
-                tdb = room_temp[i]
-                # vr = vr_activity[j]
-                # met = met_activity[j]
-                # clo = clo_activity[j]
-                # results = pmv_ppd(tdb=tdb, tr=tdb, vr=vr, rh=rh, met=met, clo=clo, standard="ASHRAE")
-                # pmv_matrix[i][j] = results['pmv']
-                # ppd_matrix[i][j] = results['ppd']
+            tdb = room_temp[i]
+            # 直接查询“坐着”的PMV/PPD
+            pmv, ppd = self.pmvppd_lookup.query(tdb, sitting_activity_index)
+            pmv_vec[i] = pmv
+            ppd_vec[i] = ppd
 
-                pmv, ppd = self.pmvppd_lookup.query(tdb, j)
-                pmv_matrix[i][j] = pmv
-                ppd_matrix[i][j] = ppd
-
+        # 5. 计算加权总和与平均值
         total_occupant_num = np.sum(occupant_num_vec)
 
         # pmv 冷(-3)//凉(-2)/稍凉(-1)//中性(0)//稍暖(+1)//暖(+2)//热(+3)
-        pmv_matrix_abs = np.abs(pmv_matrix)
-        total_pmv = np.sum(pmv_matrix_abs * occupant_activities_num)
-
-        total_ppd = np.sum(ppd_matrix * occupant_activities_num)
+        pmv_vec_abs = np.abs(pmv_vec)
+        # 向量化计算：直接用每个房间的|PMV|乘以该房间的人数
+        total_pmv = np.sum(pmv_vec_abs * occupant_num_vec)
+        total_ppd = np.sum(ppd_vec * occupant_num_vec)
 
         if total_occupant_num == 0:
             mean_pmv = 0.0
@@ -806,6 +808,54 @@ class SemiPhysBuildingSimulation(gym.core.Env):
             mean_ppd = total_ppd / total_occupant_num
 
         return mean_pmv, mean_ppd
+
+    # def get_pmv_ppd_from_datarecorder(self):
+    #     # 判断self是否包含pmvppd_lookup，如果没有，则构造
+    #     if not hasattr(self, 'pmvppd_lookup'):
+    #         self.construct_pmvppd_lookup()
+    #
+    #     occupant_num_vec = get_latest_observation_from_every_room(self.data_recorder, "occupant_num")
+    #     occupant_activities_num = occupant_num_vec.reshape(7, 3)
+    #
+    #     room_temp = get_latest_observation_from_every_room(self.data_recorder, "room_temp")
+    #
+    #     # from pythermalcomfort.models import pmv_ppd
+    #     pmv_matrix = np.zeros_like(occupant_activities_num, dtype=float)
+    #     ppd_matrix = np.zeros_like(occupant_activities_num, dtype=float)
+    #
+    #     # Calculate PMV and PPD for each room and each occupant activity
+    #     for i in range(7):
+    #         for j in range(3):
+    #             tdb = room_temp[i]
+    #             # vr = vr_activity[j]
+    #             # met = met_activity[j]
+    #             # clo = clo_activity[j]
+    #             # results = pmv_ppd(tdb=tdb, tr=tdb, vr=vr, rh=rh, met=met, clo=clo, standard="ASHRAE")
+    #             # pmv_matrix[i][j] = results['pmv']
+    #             # ppd_matrix[i][j] = results['ppd']
+    #
+    #             pmv, ppd = self.pmvppd_lookup.query(tdb, j)
+    #             pmv_matrix[i][j] = pmv
+    #             ppd_matrix[i][j] = ppd
+    #
+    #     total_occupant_num = np.sum(occupant_num_vec)
+    #
+    #     # pmv 冷(-3)//凉(-2)/稍凉(-1)//中性(0)//稍暖(+1)//暖(+2)//热(+3)
+    #     pmv_matrix_abs = np.abs(pmv_matrix)
+    #     total_pmv = np.sum(pmv_matrix_abs * occupant_activities_num)
+    #
+    #     total_ppd = np.sum(ppd_matrix * occupant_activities_num)
+    #
+    #     if total_occupant_num == 0:
+    #         mean_pmv = 0.0
+    #         mean_ppd = 0.0
+    #     else:
+    #         # 平均pmv_abs越小（越接近0）越好
+    #         mean_pmv = total_pmv / total_occupant_num
+    #         # 平均ppd越小（越接近0）越好
+    #         mean_ppd = total_ppd / total_occupant_num
+    #
+    #     return mean_pmv, mean_ppd
 
     def get_pmv_from_datarecorder(self):
         mean_pmv, _ = self.get_pmv_ppd_from_datarecorder()

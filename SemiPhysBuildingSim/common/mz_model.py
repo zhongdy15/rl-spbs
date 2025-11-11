@@ -57,7 +57,7 @@ class ZONE():
         self.occupant_list = np.zeros(occ_list_length)
         self.occupant_trans_list = np.zeros(occ_list_length)
 
-        self.use_honeycomb = False
+        self.use_honeycomb = True
 
         if self.use_honeycomb:
             self.occupant_num = 0
