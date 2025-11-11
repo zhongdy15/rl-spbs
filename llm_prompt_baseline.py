@@ -9,21 +9,75 @@ from rl_zoo3.wrappers import FrameSkip, ObsHistoryWrapper
 import os
 import datetime
 import os # 导入 os 模块来创建文件夹
-algo_classes = {"ppo": PPO,"a2c": A2C,"dqn": DQN,}
-
-save_folder = 'rl_baseline_251105'
-rl_baseline_251105 = {"ppo": "logs/ppo_Baseline_OCC_PPD_with_energy_10_2025-11-04-15-47-41/ppo/SemiPhysBuildingSim-v0_1",
-                       "a2c": "logs/a2c_Baseline_OCC_PPD_with_energy_10_2025-11-04-15-47-41/a2c/SemiPhysBuildingSim-v0_1",
-                       "dqn": "logs/dqn_Baseline_OCC_PPD_with_energy_10_2025-11-04-15-46-17/dqn/SemiPhysBuildingSim-v0_1"}
-test_model_key = "dqn"
-
-model_dir = rl_baseline_251105[test_model_key]
-model = algo_classes[test_model_key].load(model_dir+"/best_model.zip")
+import configparser
+from llm_baseline_prompt.llm_chat import llm_chat
+import json
+import json_repair
+from interpret_obs import interpret_obs
 
 
+def get_action_from_llm(obs: np.ndarray, prompt_template: str, config: configparser.ConfigParser) -> np.ndarray:
+    """
+    集成所有步骤：解释 obs -> 构造 prompt -> 调用 LLM -> 解析 action。
+    """
+    # 1. 解释 obs
+    status_text = interpret_obs(obs)
 
-print("Loading model Successfully: " + model_dir)
+    # 2. 构造完整 Prompt
+    full_prompt = prompt_template.replace("[Status Need Replacement]", status_text)
+
+    # 3. 准备调用 LLM
+    llm_api_key = config['llm_api']['api_key']
+    llm_base_url = config['llm_api']['url']
+    llm_model = config['llm_api']['model']
+
+    messages = [
+        # prompt.txt 的内容更适合作为 user prompt，因为它直接给出了任务指令
+        {"role": "user", "content": full_prompt}
+    ]
+
+    # 4. 调用 LLM 并获取响应
+    print("===================== Sending Prompt to LLM =====================")
+    # print(full_prompt)
+    print("=================================================================")
+
+    response_str = llm_chat(llm_api_key, llm_model, llm_base_url, messages)
+
+    # print(f"LLM Response (raw): {response_str}")
+
+    # 5. 解析 LLM 响应
+    try:
+        action_dict = json_repair.loads(response_str)
+        action_dict = action_dict["recommendations"]
+        # 按照 room_1 到 room_7 的顺序提取动作值
+        action_list = [action_dict[f'room_{i}'] for i in range(1, 8)]
+        action = np.array(action_list, dtype=int)
+    except (json.JSONDecodeError, KeyError) as e:
+        print(f"Error parsing LLM response: {e}. Using default safe action [0,0,0,0,0,0,0].")
+        action = np.zeros(7, dtype=int)
+
+    return action
+
+
+
+config = configparser.ConfigParser()
+config.read('llm_baseline_prompt/config/config.ini', encoding='utf-8')
+
+test_model_key = config['llm_api']['model'].split('/')[-1]
+
+# 读取 Prompt 模板
+try:
+    with open('llm_baseline_prompt/zero_shot_prompt.txt', 'r', encoding='utf-8') as f:
+        zero_shot_prompt_template = f.read()
+except FileNotFoundError:
+    print("错误：找不到 'llm_baseline_prompt/zero_shot_prompt.txt' 文件。")
+    exit()
+
+
+save_folder = 'llm_baseline_251111'
+
 print("results saved in: " + save_folder)
+print("test model key: " + test_model_key)
 
 
 reward_mode_list = ["Baseline_without_energy",
@@ -53,16 +107,20 @@ for _ in range(1):
     i = 0
     while not done:
         i += 1
-        action , _state = model.predict(obs)
-        # action = env1.action_space.sample()
-        # action = np.array(action)
-        # action = [0, 0, 0, 0, 0, 3, 0]
+
+        # 从 LLM 获取动作，替换原来的 model.predict(obs)
+        action = get_action_from_llm(obs, zero_shot_prompt_template, config)
+
         action = np.array(action)
         action_list.append(action)
         # print("Step " + str(i) + " action:" + str(action))
         obs, r, done, info = env1.step(action)
+
+
+
         rewards += r
-        if i==1:
+        if True:
+            print("Step " + str(i) + " action:" + str(action))
             print("obs shape:", obs.shape)
             print("r:", r)
             print("done:", done)
@@ -91,10 +149,12 @@ for i in range(7):
     # on_times = np.where(binary_data[:, 7 - i - 1] == 1)[0]
 
     occupancy = data_recorder[room_str]["occupant_num"]
-    occupancy_sitting = [ occupancy[t]["sitting"] for t in range(len(occupancy))]
-    occupancy_standing = [ occupancy[t]["standing"] for t in range(len(occupancy))]
-    occupancy_walking = [ occupancy[t]["walking"] for t in range(len(occupancy))]
-    occupancy_total = [ occupancy_sitting[t] + occupancy_standing[t] + occupancy_walking[t] for t in range(len(occupancy))]
+    # occupancy_sitting = [ occupancy[t]["sitting"] for t in range(len(occupancy))]
+    # occupancy_standing = [ occupancy[t]["standing"] for t in range(len(occupancy))]
+    # occupancy_walking = [ occupancy[t]["walking"] for t in range(len(occupancy))]
+    # occupancy_total = [ occupancy_sitting[t] + occupancy_standing[t] + occupancy_walking[t] for t in range(len(occupancy))]
+
+    occupancy_total = [occupancy[t] for t in range(len(occupancy))]
     FCU_power = data_recorder[room_str]["FCU_power"]
 
     ax.plot(room_temp, marker='o', linestyle='-', color='b', label='Temperature')
@@ -117,9 +177,9 @@ for i in range(7):
 
     # Create a second y-axis for occupancy
     ax_twin = ax.twinx()
-    ax_twin.plot(occupancy_sitting,  linestyle='-', color='m', label='sitting', alpha=0.7)
-    ax_twin.plot(occupancy_standing,  linestyle='-', color='c', label='standing', alpha=0.7)
-    ax_twin.plot(occupancy_walking,  linestyle='-', color='y', label='walking', alpha=0.7)
+    # ax_twin.plot(occupancy_sitting,  linestyle='-', color='m', label='sitting', alpha=0.7)
+    # ax_twin.plot(occupancy_standing,  linestyle='-', color='c', label='standing', alpha=0.7)
+    # ax_twin.plot(occupancy_walking,  linestyle='-', color='y', label='walking', alpha=0.7)
     ax_twin.plot(occupancy_total,  linestyle='-', color='k', label='total', alpha=1.0)
 
     ax_twin.set_ylabel('Occupancy (People)')

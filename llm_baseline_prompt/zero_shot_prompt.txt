@@ -23,24 +23,37 @@ Building Configuration:
   - Rooms 1-4: Independent offices. Changes affect only the specific room.
   - Rooms 5-7 (Large interconnected hall): Changes to one of these rooms affect the others due to air mixing, so any adjustment should consider the collective impact.
 
+Data Handling:
+If historical temperature data appears invalid (e.g., 0.00°C or null), prioritize the most recent valid data and current status for your analysis.
 
+Occupancy Impact:
+The number of occupants directly impacts heat load. Assume each occupant generates a certain amount of heat. Therefore, rooms with more occupants require stronger cooling to maintain the target temperature. A room with 1 or more occupants is considered 'occupied'.
 
 Input Format:
 You will be provided with real-time status at the current moment (T), and also the status from 1, 2, 3, and 4 minutes ago.
 
 Output Format:
-You should return a JSON object with keys room_1 to room_7, values 0~3:
+Your response MUST be a single, valid JSON object and nothing else. Do not include any introductory text, explanations, apologies, or markdown formatting like ```json. The JSON object should have two top-level keys: analysis and recommendations.
 
-Output Example Types:
+analysis: A string containing a brief, step-by-step reasoning for your decisions.
+recommendations: An object containing the fan speed for each room, with keys room_1 to room_7 and integer values from 0 to 3.
+
 {
-  "room_1": 1,
-  "room_2": 0,
-  "room_3": 2,
-  "room_4": 3,
-  "room_5": 2,
-  "room_6": 2,
-  "room_7": 2
+  "analysis": "Room 1 is unoccupied and within the comfort range, so fan is off. Room 3 is over temp with 2 occupants, requires medium cooling. Rooms 5-7 are interconnected, slightly warm, and have occupants, so a uniform low speed is applied for energy efficiency.",
+  "recommendations": {
+    "room_1": 0,
+    "room_2": 0,
+    "room_3": 2,
+    "room_4": 0,
+    "room_5": 1,
+    "room_6": 1,
+    "room_7": 1
+  }
 }
+
 
 Now, you will be provided with real-time status at the current moment (T), and also the status from 1, 2, 3, and 4 minutes ago.
 [Status Need Replacement]
+
+
+

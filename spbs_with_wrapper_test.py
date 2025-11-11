@@ -9,12 +9,14 @@ from rl_zoo3.wrappers import FrameSkip, ObsHistoryWrapper
 import os
 import datetime
 import os # 导入 os 模块来创建文件夹
+from interpret_obs import interpret_obs
+
 algo_classes = {"ppo": PPO,"a2c": A2C,"dqn": DQN,}
 
-save_folder = 'rl_baseline_251105'
-rl_baseline_251105 = {"ppo": "logs/ppo_Baseline_OCC_PPD_with_energy_10_2025-11-04-15-47-41/ppo/SemiPhysBuildingSim-v0_1",
-                       "a2c": "logs/a2c_Baseline_OCC_PPD_with_energy_10_2025-11-04-15-47-41/a2c/SemiPhysBuildingSim-v0_1",
-                       "dqn": "logs/dqn_Baseline_OCC_PPD_with_energy_10_2025-11-04-15-46-17/dqn/SemiPhysBuildingSim-v0_1"}
+save_folder = 'rl_baseline_251111'
+rl_baseline_251105 = {"ppo": "logs/ppo_Baseline_OCC_PPD_with_energy_10_2025-11-11-10-58-26/ppo/SemiPhysBuildingSim-v0_1",
+                       "a2c": "logs/a2c_Baseline_OCC_PPD_with_energy_10_2025-11-11-10-58-26/a2c/SemiPhysBuildingSim-v0_1",
+                       "dqn": "logs/dqn_Baseline_OCC_PPD_with_energy_10_2025-11-11-14-12-22/dqn/SemiPhysBuildingSim-v0_1"}
 test_model_key = "dqn"
 
 model_dir = rl_baseline_251105[test_model_key]
@@ -67,6 +69,8 @@ for _ in range(1):
             print("r:", r)
             print("done:", done)
             print("info:", info)
+            # print("obs:", obs)
+            print("interpret_obs:", interpret_obs(obs))
     print("rewards:" + str(rewards))
 
 binary_data = np.array(action_list)
@@ -91,10 +95,12 @@ for i in range(7):
     # on_times = np.where(binary_data[:, 7 - i - 1] == 1)[0]
 
     occupancy = data_recorder[room_str]["occupant_num"]
-    occupancy_sitting = [ occupancy[t]["sitting"] for t in range(len(occupancy))]
-    occupancy_standing = [ occupancy[t]["standing"] for t in range(len(occupancy))]
-    occupancy_walking = [ occupancy[t]["walking"] for t in range(len(occupancy))]
-    occupancy_total = [ occupancy_sitting[t] + occupancy_standing[t] + occupancy_walking[t] for t in range(len(occupancy))]
+    # occupancy_sitting = [ occupancy[t]["sitting"] for t in range(len(occupancy))]
+    # occupancy_standing = [ occupancy[t]["standing"] for t in range(len(occupancy))]
+    # occupancy_walking = [ occupancy[t]["walking"] for t in range(len(occupancy))]
+    # occupancy_total = [ occupancy_sitting[t] + occupancy_standing[t] + occupancy_walking[t] for t in range(len(occupancy))]
+
+    occupancy_total = [occupancy[t] for t in range(len(occupancy))]
     FCU_power = data_recorder[room_str]["FCU_power"]
 
     ax.plot(room_temp, marker='o', linestyle='-', color='b', label='Temperature')
@@ -117,9 +123,9 @@ for i in range(7):
 
     # Create a second y-axis for occupancy
     ax_twin = ax.twinx()
-    ax_twin.plot(occupancy_sitting,  linestyle='-', color='m', label='sitting', alpha=0.7)
-    ax_twin.plot(occupancy_standing,  linestyle='-', color='c', label='standing', alpha=0.7)
-    ax_twin.plot(occupancy_walking,  linestyle='-', color='y', label='walking', alpha=0.7)
+    # ax_twin.plot(occupancy_sitting,  linestyle='-', color='m', label='sitting', alpha=0.7)
+    # ax_twin.plot(occupancy_standing,  linestyle='-', color='c', label='standing', alpha=0.7)
+    # ax_twin.plot(occupancy_walking,  linestyle='-', color='y', label='walking', alpha=0.7)
     ax_twin.plot(occupancy_total,  linestyle='-', color='k', label='total', alpha=1.0)
 
     ax_twin.set_ylabel('Occupancy (People)')
