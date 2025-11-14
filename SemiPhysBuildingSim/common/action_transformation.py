@@ -81,8 +81,94 @@ def map_controls_to_action(action_set, controls):
 
     return action_index
 
+def action_index_to_array(action_index, dims):
+    """
+    参数:
+        action_index : int
+        dims : list或tuple，长度为7，每一维的取值数量，如 [3, 2, 4, 5, 3, 2, 2]
+
+    返回:
+        np.array(size=7)
+    """
+    result = []
+    for dim_size in dims:
+        result.append(action_index % dim_size)
+        action_index //= dim_size
+    return np.array(result, dtype=int)
+
+
+def array_to_action_index(arr, dims):
+    """
+    参数:
+        arr : np.array(size=7)
+        dims: 每一维的取值数量
+
+    返回:
+        对应的 action_index (int)
+    """
+    action_index = 0
+    multiplier = 1
+
+    for value, dim_size in zip(arr, dims):
+        action_index += value * multiplier
+        multiplier *= dim_size
+
+    return action_index
+
+
+def get_action_mask_fast(controllable_rooms, old_action_index, action_space):
+    """
+    高效地生成动作掩码(action mask)，避免遍历整个动作空间。
+
+    Args:
+        controllable_rooms (np.array): 长度为7的数组，1表示可控，0表示不可控。
+        old_action_index (int): 上一个时间步的动作索引。
+        action_space (gym.spaces.Discrete): 智能体的动作空间。
+
+    Returns:
+        np.array: 一个长度与动作空间大小相同的0/1数组，
+                  值为1表示该动作可选，值为0表示该动作被屏蔽。
+    """
+    n_actions = action_space.n # 16384
+    n_rooms = 7
+    # 动作空间的基数，即每个房间风机档位的选项数 (4)
+    base = 4 #int(round(n_actions ** (1 / n_rooms)))  # 4 = 16384^(1/7)
+
+    # 1. 初始化一个全为1的掩码数组，表示所有动作初始都可选
+    action_mask = np.ones(n_actions, dtype=np.int8)
+
+    # 2. 找到不可控房间的索引
+    uncontrollable_room_indices = np.where(controllable_rooms == 0)[0]
+
+    # 3. 遍历每一个不可控的房间，并排除无效动作
+    temp_index = old_action_index
+    for room_idx in range(n_rooms):
+        # 计算当前房间对应的乘数（权重），即 4^0, 4^1, 4^2, ...
+        multiplier = base ** room_idx
+
+        # a. 提取旧动作中，当前房间的动作值 (0, 1, 2, or 3)
+        old_room_action = (temp_index // multiplier) % base
+
+        # b. 如果当前房间是不可控的
+        if room_idx in uncontrollable_room_indices:
+            # 我们需要将所有动作中，该房间动作值不等于 old_room_action 的动作屏蔽掉
+
+            # 使用向量化操作，高效地找到所有需要被屏蔽的动作索引
+            # 核心思想：(indices // multiplier) % base != old_room_action
+            # 这会找所有在 room_idx "位" 上值不等于 old_room_action 的索引
+            all_indices = np.arange(n_actions)
+            # 计算所有索引在当前房间“位”上的值
+            room_actions_for_all_indices = (all_indices // multiplier) % base
+            # 找到那些值不等于旧动作值的索引
+            indices_to_mask = np.where(room_actions_for_all_indices != old_room_action)[0]
+
+            # 将这些索引在mask中置为0
+            action_mask[indices_to_mask] = 0
+
+    return action_mask
 
 if __name__ == "__main__":
+    import json
     # 使用示例
     action_set = available_action_set()
     action_space = create_action_space(action_set)
@@ -95,6 +181,58 @@ if __name__ == "__main__":
     # 将控制指令映射到动作索引
     mapped_action_index = map_controls_to_action(action_set, controls)
     print(f"Mapped Action Index: {mapped_action_index}")
-
-
     print("Mapped Controls:", controls)
+
+    # --- 场景设定 ---
+    controllable_rooms = np.array([1, 0, 1, 0, 1, 0, 0])
+    old_action_index = 500 # [0,1,3,3,1,0,0]d
+    controls = map_action_to_controls(action_set, old_action_index)
+    # print(f"Old Action: {controls}")
+    print("Old Action (JSON format):")
+    print(json.dumps(controls, indent=4, ensure_ascii=False))
+
+    action_mask_fast = get_action_mask_fast(controllable_rooms, old_action_index, action_space)
+    print("\n--- 结果验证 ---")
+    action_mask = action_mask_fast  # 使用快速方法的结果进行验证
+
+    valid_action_indices = np.where(action_mask == 1)[0]
+    num_valid_actions = len(valid_action_indices)
+
+    print(f"可控房间: {controllable_rooms}")
+    print(f"旧动作索引: {old_action_index}")
+    print(f"Mask中有效动作的数量: {num_valid_actions}")
+
+    # 理论上，可行动作数量应该是：(风机档位数)^(可控房间数) = 4^3 = 64
+    num_controllable = np.sum(controllable_rooms)
+    base = int(round(action_space.n ** (1 / 7)))
+    theoretical_valid_actions = base ** num_controllable
+    print(f"理论上有效动作的数量应为 {base}^{num_controllable} = {theoretical_valid_actions}")
+
+    assert num_valid_actions == theoretical_valid_actions
+    print("[成功] 实际有效动作数与理论值相符！")
+
+    # 验证逻辑：所有有效动作，其不可控房间的设定都应与old_action_index一致
+    base = 4
+    is_check_passed = True
+    print("old action:", action_index_to_array(old_action_index,[4, 4, 4, 4, 4, 4, 4]))
+    for valid_idx in valid_action_indices:
+        # 检查每个不可控房间
+        print(f"检查有效动作索引 {action_index_to_array(valid_idx,[4, 4, 4, 4, 4, 4, 4])}:")
+        for room_idx, is_controllable in enumerate(controllable_rooms):
+            if not is_controllable:
+                multiplier = base ** room_idx
+                # 获取有效动作中，该房间的设定
+                new_room_action = (valid_idx // multiplier) % base
+                # 获取旧动作中，该房间的设定
+                old_room_action = (old_action_index // multiplier) % base
+
+                if new_room_action != old_room_action:
+                    print(f"[失败!] 在有效动作索引 {valid_idx} 中, 不可控房间 {room_idx + 1} 的设定错误。")
+                    is_check_passed = False
+                    break
+        if not is_check_passed:
+            break
+
+    if is_check_passed:
+        print("[成功] 所有有效动作均满足不可控房间设定不变的约束。")
+

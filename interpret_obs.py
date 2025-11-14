@@ -100,6 +100,51 @@ def interpret_obs(obs: np.ndarray, frame_skip: int = 5) -> str:
     # 将所有时间步的文本用两个换行符隔开，形成最终输出
     return "\n\n".join(final_text_parts)
 
+
+def get_current_fan_speed_from_obs(obs: np.ndarray, frame_skip: int = 5) -> np.ndarray:
+    """
+    从完整的观测数组 (obs) 中提取最新时间步的7个房间的风扇速度。
+
+    Args:
+        obs (np.ndarray): 形状为 (180,) 的观测数组。
+        frame_skip (int): 帧跳数，表示 obs 中包含多少个时间步的观测。默认为 5。
+
+    Returns:
+        np.ndarray: 一个长度为 7 的 numpy 数组，包含从 room1 到 room7 的最新风扇速度。
+    """
+    # 1. 校验输入数组的形状
+    if obs.shape[0] != 180:
+        raise ValueError(f"输入数组 obs 的形状应为 (180,)，但实际为 {obs.shape}")
+
+    # 2. 计算单个时间步（frame）的数据长度
+    single_frame_length = obs.shape[0] // frame_skip
+    if single_frame_length != 36:
+        raise ValueError(f"每个时间步的观测长度应为 36 (180/5)，但计算结果为 {single_frame_length}")
+
+    # 3. 提取最新时间步的数据
+    # obs 数组的结构是 [最旧, ..., 最新]，所以最后一个切片是最新数据。
+    # 最后一个切片的起始索引是 (frame_skip - 1) * single_frame_length
+    latest_frame_start_index = (frame_skip - 1) * single_frame_length
+    latest_frame = obs[latest_frame_start_index:]
+
+    # 4. 从最新时间步中提取风扇速度
+    # 根据 `interpret_obs` 函数中的数据结构，我们可以确定每个房间风扇速度的索引。
+    # - 室外温度: 1个值 (索引 0)
+    # - 每个房间: 5个值 (temp, fan_speed, supply, return, occupants)
+    # - `FCU_fan_feedback` 是每个房间数据块中的第2个值（索引为1）。
+
+    # room1 的风扇速度索引: 1 (室外) + 1 (room1 temp) = 2
+    # room2 的风扇速度索引: 1 (室外) + 5 (room1) + 1 (room2 temp) = 7
+    # room_N 的风扇速度索引: 1 + (N-1)*5 + 1
+    # 公式为： 2 + (N-1)*5
+
+    fan_speed_indices = [2 + (i * 5) for i in range(7)]
+
+    # 直接使用高级索引从最新帧中提取所有风扇速度
+    fan_speeds = latest_frame[fan_speed_indices]
+
+    return fan_speeds
+
 if __name__ == "__main__":
     # 创建一个随机的模拟 obs 数组用于测试
     # 实际使用时，这个 obs 会由您的环境提供
@@ -147,3 +192,15 @@ if __name__ == "__main__":
     explanation = interpret_obs(mock_obs, frame_skip=5)
     print(explanation)
 
+    current_fan_speeds = get_current_fan_speed_from_obs(mock_obs, frame_skip=5)
+
+    print("提取到的最新风扇速度:")
+    print(current_fan_speeds)
+    print(f"类型: {type(current_fan_speeds)}")
+    print(f"形状: {current_fan_speeds.shape}")
+
+    # # 作为验证，我们可以检查 `interpret_obs` 的输出
+    # print("\n----------------------------------\n")
+    # print("使用 interpret_obs 函数的完整输出（仅用于验证）:")
+    # explanation = interpret_obs(mock_obs, frame_skip=5)
+    # print(explanation)
