@@ -24,6 +24,10 @@ from torch import nn as nn  # noqa: F401 pylint: disable=unused-import
 
 from bdq.bdq import BDQ
 from hgqn.hgqn import HGQN
+from mask_DQN.dqn_original import OriginalDQN
+from mask_DQN.dqn_mask import MaskDQN
+
+
 
 ALGOS: Dict[str, Type[BaseAlgorithm]] = {
     "a2c": A2C,
@@ -40,6 +44,8 @@ ALGOS: Dict[str, Type[BaseAlgorithm]] = {
     "ppo_lstm": RecurrentPPO,
     "bdq": BDQ,
     "hgqn": HGQN,
+    "dqn_original": OriginalDQN,
+    "dqn_mask": MaskDQN,
 }
 
 
