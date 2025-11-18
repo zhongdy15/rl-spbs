@@ -5,7 +5,7 @@ import SemiPhysBuildingSim
 import gym
 import numpy as np
 import matplotlib.pyplot as plt
-from rl_zoo3.wrappers import FrameSkip, ObsHistoryWrapper
+from rl_zoo3.wrappers import FrameSkip, ObsHistoryWrapper, ActionMasker
 import os
 import datetime
 import os # 导入 os 模块来创建文件夹
@@ -13,7 +13,7 @@ from interpret_obs import interpret_obs
 
 algo_classes = {"ppo": PPO,"a2c": A2C,"dqn": DQN,}
 
-save_folder = 'rl_baseline_251112'
+save_folder = 'action_mask_test_1118'
 rl_baseline_251105 = {"ppo": "logs/ppo_Baseline_OCC_PPD_with_energy_10_2025-11-11-16-36-41/ppo/SemiPhysBuildingSim-v0_1",
                        "a2c": "logs/a2c_Baseline_OCC_PPD_with_energy_10_2025-11-11-10-58-26/a2c/SemiPhysBuildingSim-v0_1",
                        "dqn": "logs/dqn_Baseline_OCC_PPD_with_energy_10_2025-11-11-16-38-57/dqn/SemiPhysBuildingSim-v0_1"}
@@ -51,6 +51,7 @@ for i in range(seed_num):
 
     env1 = ObsHistoryWrapper(env1, horizon=frame_skip)
     env1 = FrameSkip(env1, skip=frame_skip)
+    env1 = ActionMasker(env1)
 
     print("Frame skip: " + str(frame_skip))
 
