@@ -36,8 +36,8 @@ def create_fixed_action_mask(
 
     # 1. 定义或计算 controllable_rooms
     # 暂时固定：第5个和第7个房间（0-indexed 下的索引4和6）始终不可控。
-    # controllable_rooms = np.array([1, 1, 1, 1, 0, 1, 0], dtype=np.int8)
-    controllable_rooms = np.array([1, 1, 1, 1, 1, 1, 1], dtype=np.int8)
+    controllable_rooms = np.array([1, 1, 1, 1, 0, 1, 0], dtype=np.int8)
+    # controllable_rooms = np.array([1, 1, 1, 1, 1, 1, 1], dtype=np.int8)
     # TODO: 未来，可以根据 obs 来动态生成 controllable_rooms
     # 例如: controllable_rooms = get_controllable_from_obs(obs)
 
