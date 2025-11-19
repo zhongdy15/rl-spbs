@@ -61,7 +61,12 @@ for _ in range(1):
     current_action_mask = None
     while not done:
         i += 1
-        current_action_mask = np.ones_like(current_action_mask) if current_action_mask is not None else current_action_mask
+        # # current_action_mask = np.zeros_like(current_action_mask) if current_action_mask is not None else current_action_mask
+        # if current_action_mask is not None:
+        #     current_action_mask = np.zeros_like(current_action_mask)
+        #     current_action_mask[0][1] = 1
+
+
         action , _state = model.predict(obs, deterministic=False, action_mask=current_action_mask)
         # action = env1.action_space.sample()
         # action = np.array(action)
