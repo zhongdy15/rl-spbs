@@ -267,8 +267,9 @@ class MaskDQN(DQN):
                     action = np.array([self.action_space.sample() for _ in range(n_batch)])
             else:
                 # action = np.array(self.action_space.sample())
+                squeezed_mask = np.squeeze(action_mask)
                 # 单环境情况，直接使用 mask 采样
-                action = np.array(self._sample_with_mask(self.action_space, action_mask))
+                action = np.array(self._sample_with_mask(self.action_space, squeezed_mask))
         else:
             action, state = self.policy.predict(observation, state, episode_start, deterministic, action_mask=action_mask)
         return action, state

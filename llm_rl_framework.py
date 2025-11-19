@@ -5,7 +5,7 @@ import SemiPhysBuildingSim
 import gym
 import numpy as np
 import matplotlib.pyplot as plt
-from rl_zoo3.wrappers import FrameSkip, ObsHistoryWrapper
+from rl_zoo3.wrappers import FrameSkip, ObsHistoryWrapper, ActionMasker
 import os
 import datetime
 import os # 导入 os 模块来创建文件夹

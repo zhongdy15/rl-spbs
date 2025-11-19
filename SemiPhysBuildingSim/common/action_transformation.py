@@ -90,6 +90,7 @@ def action_index_to_array(action_index, dims):
     返回:
         np.array(size=7)
     """
+    assert isinstance(action_index, int), "action_index must be an integer"
     result = []
     for dim_size in dims:
         result.append(action_index % dim_size)
