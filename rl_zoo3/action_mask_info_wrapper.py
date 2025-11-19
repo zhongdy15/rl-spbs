@@ -2,22 +2,50 @@ import gym
 import numpy as np
 from gym import spaces
 from typing import Callable, Union, Dict, Any, Tuple
+from SemiPhysBuildingSim.common.action_transformation import action_index_to_array, array_to_action_index, get_action_mask_fast
 
 # 定义一个类型别名，用于 action mask 生成函数
-# 新签名：输入是观测值(obs)和动作空间(action_space)，输出是掩码(mask)
-ActionMaskFn = Callable[[Union[np.ndarray, Dict[str, np.ndarray]], spaces.Discrete], np.ndarray]
+# 新签名：输入是新的观测值(obs)、上一步的动作(action)和动作空间(action_space)，输出是掩码(mask)
+ActionMaskFn = Callable[[Union[np.ndarray, Dict[str, np.ndarray]], int, spaces.Discrete], np.ndarray]
 
 
-def get_dummy_action_mask(obs: Union[np.ndarray, Dict[str, np.ndarray]], action_space: spaces.Discrete) -> np.ndarray:
+def get_dummy_action_mask(
+    obs: Union[np.ndarray, Dict[str, np.ndarray]],
+    last_action: int,
+    action_space: spaces.Discrete
+) -> np.ndarray:
     """
     一个简单的占位符函数，用于生成动作掩码。
-    它现在接收 action_space 参数，并用它来确定掩码的维度。
+    它现在接收新的观测值、上一步的动作和动作空间作为参数。
 
     :param obs: 环境的观测值 (当前未使用)。
+    :param action: 上一步执行的动作 (当前未使用)。在 episode 开始时（即 reset后），该值为 -1。
     :param action_space: 环境的离散动作空间。
-    :return: 一个全为 1 的 numpy 数组，形状为 (action_space.n,)。
+    :return: 一个全为 1 的 numpy 数组，形状为 (action_space.n,)，表示所有动作都可用。
     """
+    # 打印收到的参数，方便调试 (可注释掉)
+    # print(f"Generating mask with last_action: {action}, obs shape: {obs.shape if isinstance(obs, np.ndarray) else 'Dict Obs'}")
     return np.ones(action_space.n, dtype=np.int8)
+
+
+def create_fixed_action_mask(
+    obs: Union[np.ndarray, Dict[str, np.ndarray]],
+    last_action: int,
+    action_space: spaces.Discrete
+) -> np.ndarray:
+
+    # 1. 定义或计算 controllable_rooms
+    # 暂时固定：第5个和第7个房间（0-indexed 下的索引4和6）始终不可控。
+    # controllable_rooms = np.array([1, 1, 1, 1, 0, 1, 0], dtype=np.int8)
+    controllable_rooms = np.array([1, 1, 1, 1, 1, 1, 1], dtype=np.int8)
+    # TODO: 未来，可以根据 obs 来动态生成 controllable_rooms
+    # 例如: controllable_rooms = get_controllable_from_obs(obs)
+
+    old_action_index = last_action
+
+    action_mask = get_action_mask_fast(controllable_rooms, old_action_index, action_space)
+
+    return action_mask
 
 
 class ActionMasker(gym.Wrapper):
@@ -27,7 +55,7 @@ class ActionMasker(gym.Wrapper):
     它使用一个可配置的函数来根据当前观测值和动作空间生成掩码。
     """
 
-    def __init__(self, env: gym.Env, action_mask_fn: ActionMaskFn = get_dummy_action_mask):
+    def __init__(self, env: gym.Env, action_mask_fn: ActionMaskFn = create_fixed_action_mask):
         """
         初始化 Wrapper。
 
@@ -41,27 +69,12 @@ class ActionMasker(gym.Wrapper):
 
         self.action_mask_fn = action_mask_fn
 
-    def _get_action_mask(self, obs: Union[np.ndarray, Dict[str, np.ndarray]]) -> np.ndarray:
+    def _get_action_mask(self, obs: Union[np.ndarray, Dict[str, np.ndarray]], last_action: int) -> np.ndarray:
         """
         内部辅助函数，用于调用掩码生成函数。
         """
-        # 调用时传入 self.action_space
-        return self.action_mask_fn(obs, self.action_space)
-
-    # def reset(self, **kwargs) -> Tuple[Union[np.ndarray, Dict[str, np.ndarray]], Dict[str, Any]]:
-    #     """
-    #     重置环境，并在返回的 info 字典中添加 'action_mask'。
-    #     """
-    #     try:
-    #         obs, info = self.env.reset(**kwargs)
-    #     except (TypeError, ValueError):  # ValueError for some gym versions
-    #         obs = self.env.reset(**kwargs)
-    #         info = {}
-    #
-    #     action_mask = self._get_action_mask(obs)
-    #     info['action_mask'] = action_mask
-    #
-    #     return obs, info
+        # 调用时传入 obs, last_action, 和 self.action_space
+        return self.action_mask_fn(obs=obs, last_action=last_action, action_space=self.action_space)
 
     def step(self, action: int) -> Tuple[Union[np.ndarray, Dict[str, np.ndarray]], float, bool, Dict[str, Any]]:
         """
@@ -69,7 +82,7 @@ class ActionMasker(gym.Wrapper):
         """
         obs, reward, done, info = self.env.step(action)
 
-        action_mask = self._get_action_mask(obs)
+        action_mask = self._get_action_mask(obs=obs, last_action=action)
         info['action_mask'] = action_mask
 
         return obs, reward, done, info
