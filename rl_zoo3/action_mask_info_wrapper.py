@@ -36,12 +36,34 @@ def create_fixed_action_mask(
 
     # 1. 定义或计算 controllable_rooms
     # 暂时固定：第5个和第7个房间（0-indexed 下的索引4和6）始终不可控。
+    # !!! 这里的不可控是指房间所有的action都服从前一个动作
     controllable_rooms = np.array([1, 1, 1, 1, 0, 1, 0], dtype=np.int8)
     # controllable_rooms = np.array([1, 1, 1, 1, 1, 1, 1], dtype=np.int8)
     # TODO: 未来，可以根据 obs 来动态生成 controllable_rooms
     # 例如: controllable_rooms = get_controllable_from_obs(obs)
 
     old_action_index = last_action
+
+    action_mask = get_action_mask_fast(controllable_rooms, old_action_index, action_space)
+
+    return action_mask
+
+
+def create_fixed_action_mask_2nd(
+    obs: Union[np.ndarray, Dict[str, np.ndarray]],
+    last_action: int,
+    action_space: spaces.Discrete
+) -> np.ndarray:
+
+    # 1. 定义或计算 controllable_rooms
+    # 暂时固定：第5个和第7个房间（0-indexed 下的索引4和6）始终不可控。
+    # !!! 这里的不可控是指不可控房间的action都是0，即不允许控制
+    controllable_rooms = np.array([1, 1, 1, 1, 0, 1, 0], dtype=np.int8)
+    # controllable_rooms = np.array([1, 1, 1, 1, 1, 1, 1], dtype=np.int8)
+    # TODO: 未来，可以根据 obs 来动态生成 controllable_rooms
+    # 例如: controllable_rooms = get_controllable_from_obs(obs)
+
+    old_action_index = 0
 
     action_mask = get_action_mask_fast(controllable_rooms, old_action_index, action_space)
 
@@ -55,7 +77,7 @@ class ActionMasker(gym.Wrapper):
     它使用一个可配置的函数来根据当前观测值和动作空间生成掩码。
     """
 
-    def __init__(self, env: gym.Env, action_mask_fn: ActionMaskFn = create_fixed_action_mask):
+    def __init__(self, env: gym.Env, action_mask_fn: ActionMaskFn = create_fixed_action_mask_2nd):
         """
         初始化 Wrapper。
 

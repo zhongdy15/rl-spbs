@@ -41,6 +41,7 @@ from stable_baselines3.common.vec_env import VecEnv
 from stable_baselines3.her.her_replay_buffer import HerReplayBuffer
 
 from stable_baselines3.common.preprocessing import get_action_dim, get_obs_shape
+from SemiPhysBuildingSim.common.action_transformation import action_index_to_array, array_to_action_index, get_action_mask_fast
 
 
 
@@ -367,6 +368,8 @@ class MaskDQN(DQN):
             buffer_actions = actions
 
             # Rescale and perform action
+            # action_array = action_index_to_array(int(actions), [4, 4, 4, 4, 4, 4, 4])
+            # print("actions:", actions, "action_array:", action_array)
             new_obs, rewards, dones, infos = env.step(actions)
 
             self.num_timesteps += env.num_envs
