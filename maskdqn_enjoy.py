@@ -16,11 +16,11 @@ from SemiPhysBuildingSim.common.action_transformation import action_index_to_arr
 
 algo_classes = {"ppo": PPO,"a2c": A2C,"dqn": DQN, "dqn_mask": MaskDQN}
 
-save_folder = 'maskdqn_baseline_251119'
+save_folder = 'maskdqn_uncontrol57_251120'
 rl_baseline_251105 = {"ppo": "logs/ppo_Baseline_OCC_PPD_with_energy_10_2025-11-11-16-36-41/ppo/SemiPhysBuildingSim-v0_1",
                        "a2c": "logs/a2c_Baseline_OCC_PPD_with_energy_10_2025-11-11-10-58-26/a2c/SemiPhysBuildingSim-v0_1",
                        "dqn": "logs/dqn_Baseline_OCC_PPD_with_energy_10_2025-11-11-16-38-57/dqn/SemiPhysBuildingSim-v0_1",
-                      "dqn_mask": "logs/dqn_mask_Baseline_OCC_PPD_with_energy_10_2025-11-19-12-52-21/dqn_mask/SemiPhysBuildingSim-v0_1"}
+                      "dqn_mask": "logs/dqn_mask_Baseline_OCC_PPD_with_energy_10_2025-11-20-10-46-51/dqn_mask/SemiPhysBuildingSim-v0_1"}
 test_model_key = "dqn_mask"
 
 model_dir = rl_baseline_251105[test_model_key]
@@ -67,7 +67,7 @@ for _ in range(1):
         #     current_action_mask[0][1] = 1
 
 
-        action , _state = model.predict(obs, deterministic=False, action_mask=current_action_mask)
+        action , _state = model.predict(obs, deterministic=True, action_mask=current_action_mask)
         # action = env1.action_space.sample()
         # action = np.array(action)
         # action = [0, 0, 0, 0, 0, 3, 0]
