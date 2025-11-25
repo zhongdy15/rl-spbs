@@ -3,11 +3,24 @@ import numpy as np
 from gym import spaces
 from typing import Callable, Union, Dict, Any, Tuple
 from SemiPhysBuildingSim.common.action_transformation import action_index_to_array, array_to_action_index, get_action_mask_fast
+from llm_baseline_prompt.llm_chat import llm_chat
+import json_repair
+import configparser
+from interpret_obs import interpret_obs, get_current_fan_speed_from_obs
 
 # 定义一个类型别名，用于 action mask 生成函数
 # 新签名：输入是新的观测值(obs)、上一步的动作(action)和动作空间(action_space)，输出是掩码(mask)
 ActionMaskFn = Callable[[Union[np.ndarray, Dict[str, np.ndarray]], int, spaces.Discrete], np.ndarray]
 
+print("===================== llm config loading =====================")
+config = configparser.ConfigParser()
+config.read('llm_baseline_prompt/config/config.ini', encoding='utf-8')
+test_model_key = config['llm_api']['model'].split('/')[-1]
+
+with open('llm_baseline_prompt/zero_shot_prompt_action_reduce.txt', 'r', encoding='utf-8') as f:
+    zero_shot_prompt_template = f.read()
+
+print(f"===================== llm config loading: {test_model_key} =====================")
 
 def get_dummy_action_mask(
     obs: Union[np.ndarray, Dict[str, np.ndarray]],
@@ -68,6 +81,91 @@ def create_fixed_action_mask_2nd(
     return action_mask
 
 
+def get_confidence_scores_from_llm(obs: np.ndarray, prompt_template: str, config: configparser.ConfigParser) -> np.ndarray:
+    """
+    集成所有步骤：解释 obs -> 构造 prompt -> 调用 LLM -> 解析 confidence_scores。
+    """
+    # 1. 解释 obs
+    status_text = interpret_obs(obs)
+
+    # 2. 构造完整 Prompt
+    full_prompt = prompt_template.replace("[Status Need Replacement]", status_text)
+
+    # 3. 准备调用 LLM
+    llm_api_key = config['llm_api']['api_key']
+    llm_base_url = config['llm_api']['url']
+    llm_model = config['llm_api']['model']
+
+    messages = [
+        # prompt.txt 的内容更适合作为 user prompt，因为它直接给出了任务指令
+        {"role": "user", "content": full_prompt}
+    ]
+
+    # 4. 调用 LLM 并获取响应
+    print("===================== Sending Prompt to LLM =====================")
+    # print(full_prompt)
+    print("=================================================================")
+
+    response_str = llm_chat(llm_api_key, llm_model, llm_base_url, messages)
+
+    # print(f"LLM Response (raw): {response_str}")
+
+    # 5. 解析 LLM 响应
+    try:
+        response_dict = json_repair.loads(response_str)
+        confidence_scores = response_dict["confidence_scores"]
+        # 按照 room_1 到 room_7 的顺序提取confidence_scores
+        confidence_list = [confidence_scores[i] for i in range(7)]
+        confidence_scores = np.array(confidence_list)
+    except Exception as e:
+        print(f"Error parsing LLM response: {e}. Using default confidence_scores [0,0,0,0,0,0,0].")
+        confidence_scores = np.zeros(7)
+
+    try:
+        action_dict = json_repair.loads(response_str)
+        reason = action_dict["explanation_and_thought_process"]
+    except Exception as e:
+        print(f"Error parsing LLM response: {e}. Using default reason 'No reason provided'.")
+        reason = "No reason provided"
+
+    return confidence_scores, reason
+
+
+def get_action_mask_from_llm(
+    obs: Union[np.ndarray, Dict[str, np.ndarray]],
+    last_action: int,
+    action_space: spaces.Discrete
+) -> np.ndarray:
+    """
+    从 LLM 中获取动作掩码。
+
+    :param obs: 环境的观测值。
+    :param last_action: 上一步执行的动作。
+    :param action_space: 环境的离散动作空间。
+    :return: 从 LLM 中获取的动作掩码。
+    """
+
+    old_action = get_current_fan_speed_from_obs(obs)
+    old_action_index = array_to_action_index(old_action, [4, 4, 4, 4, 4, 4, 4])
+
+    # 从 LLM 获取confidence_scores
+    confidence_scores, reason = get_confidence_scores_from_llm(obs, zero_shot_prompt_template, config)
+    # 从confidence_scores挑出最大的3个confidence score，该处是controllable，其他位置不controllable
+    max_indices = np.argsort(confidence_scores)[-6:]
+
+    # controllable_rooms = np.array([1, 0, 1, 0, 1, 0, 0])
+    controllable_rooms = np.zeros_like(old_action, dtype=int)
+    controllable_rooms[max_indices] = 1
+    print("controllable_rooms:", controllable_rooms)
+
+    # 得到 action mask
+    action_mask = get_action_mask_fast(controllable_rooms, old_action_index, action_space)
+
+    return action_mask
+
+
+
+
 class ActionMasker(gym.Wrapper):
     """
     一个 Gym Wrapper，用于在环境的 `info` 字典中自动添加 'action_mask'。
@@ -75,7 +173,7 @@ class ActionMasker(gym.Wrapper):
     它使用一个可配置的函数来根据当前观测值和动作空间生成掩码。
     """
 
-    def __init__(self, env: gym.Env, action_mask_fn: ActionMaskFn = create_fixed_action_mask_2nd):
+    def __init__(self, env: gym.Env, action_mask_fn: ActionMaskFn = get_action_mask_from_llm):
         """
         初始化 Wrapper。
 
