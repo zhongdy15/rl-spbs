@@ -7,7 +7,7 @@ import numpy as np
 all_missing_value_logs = []
 # 定义缺失值日志文件的路径
 # 它将与处理后的CSV文件一起保存在 'expert_data_clean' 文件夹中
-log_file_path = os.path.join('expert_data_clean', 'missing_values_log.txt')
+log_file_path = os.path.join('step2_expert_data_clean', 'missing_values_log.txt')
 
 
 def export_room_data_to_csv(room_name: str, target_date_str: str, start_time_str: str, end_time_str: str):
@@ -29,8 +29,8 @@ def export_room_data_to_csv(room_name: str, target_date_str: str, start_time_str
     """
 
     # 构造 CSV 文件路径
-    room_csv_file_path = f'expert_data_new/{room_name}_result.csv'
-    pump_csv_file_path = 'expert_data/pump_1_result.csv'  # 室外温度数据来源
+    room_csv_file_path = f'step1_expert_data_new/{room_name}_result.csv'
+    pump_csv_file_path = 'step0_expert_data/pump_1_result.csv'  # 室外温度数据来源
 
     # --- 1. 读取房间 CSV 文件 (room_X_result.csv) ---
     try:
@@ -143,7 +143,7 @@ def export_room_data_to_csv(room_name: str, target_date_str: str, start_time_str
         return
 
     # --- 8. 准备保存 CSV 文件 ---
-    output_folder = 'expert_data_clean'  # 新的输出文件夹
+    output_folder = 'step2_expert_data_clean'  # 新的输出文件夹
     # 检查文件夹是否存在，如果不存在则创建
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
@@ -203,13 +203,13 @@ if __name__ == "__main__":
 
     # 固定的时间范围
     start_time_fixed = '09:00'
-    end_time_fixed = '21:00'
+    end_time_fixed = '19:00'
 
     print("--- 开始批量导出房间数据到 CSV 文件 ---")
 
     # 在开始处理前，清除旧的缺失值日志文件，以确保生成最新的日志
     # 确保 expert_data_clean 文件夹存在，否则创建它
-    output_folder = 'expert_data_clean'
+    output_folder = 'step2_expert_data_clean'
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 

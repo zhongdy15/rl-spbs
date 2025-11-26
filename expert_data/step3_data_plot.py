@@ -145,7 +145,7 @@ def plot_processed_csv_data(csv_file_path: str):
     plt.suptitle(f'{room_name} 数据曲线 - {target_date_str_formatted}', y=0.99, fontsize=16)
 
     # --- 5. 保存图片到指定文件夹 ---
-    output_folder = 'expert_data_plots_from_clean_csv'
+    output_folder = 'step3_expert_data_plots_from_clean_csv'
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
         print(f"\n创建了输出文件夹: '{output_folder}'")
@@ -163,7 +163,7 @@ def plot_processed_csv_data(csv_file_path: str):
 # --- 示例调用 (仅修改 main 函数部分) ---
 if __name__ == "__main__":
     # 定义包含CSV文件的目录
-    csv_directory = 'expert_data_clean'
+    csv_directory = 'step2_expert_data_clean'
 
     # 检查目录是否存在
     if not os.path.exists(csv_directory):

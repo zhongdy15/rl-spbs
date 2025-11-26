@@ -145,6 +145,77 @@ def get_current_fan_speed_from_obs(obs: np.ndarray, frame_skip: int = 5) -> np.n
 
     return fan_speeds
 
+
+def extract_current_key_features(obs: np.ndarray) -> np.ndarray:
+    """
+    从观测数组中，仅提取最新时间步（最后 36 维）的关键特征。
+    支持批量处理二维数组。
+
+    关键特征包括：outdoor_temp, room_temp (7间), occupant_num (7间)。
+
+    Args:
+        obs (np.ndarray): 形状为 (180,) 或 (N, 180) 的观测数组。
+                          N 为样本数量。
+
+    Returns:
+        np.ndarray:
+            - 如果输入是 (180,)，返回 (15,)。
+            - 如果输入是 (N, 180)，返回 (N, 15)。
+            特征顺序为: [OutdoorTemp, T1, T2...T7, Occ1, Occ2...Occ7]
+    """
+    # 1. 基础校验和维度判断
+    obs_dim = obs.ndim
+    if obs_dim == 1:
+        if obs.shape[0] != 180:
+            raise ValueError(f"一维输入 obs 的形状应为 (180,)，但实际为 {obs.shape}")
+        # 为了统一处理，将一维升维到二维 (1, 180)
+        obs = obs[np.newaxis, :]
+    elif obs_dim == 2:
+        if obs.shape[1] != 180:
+            raise ValueError(f"二维输入 obs 的第二个维度应为 180，但实际为 {obs.shape}")
+    else:
+        raise ValueError(f"输入 obs 的维度应为 1 或 2，但实际为 {obs_dim}")
+
+    # 2. 提取最新时间步的数据（最后 36 维）
+    # 180 / 5 = 36。最新的帧从索引 144 开始到 179 结束。
+    frame_size = 36
+    start_index = 180 - frame_size
+
+    # 使用切片提取所有样本的最后 36 列
+    # shape 变为 (N, 36)
+    latest_frame = obs[:, start_index:]
+
+    # 3. 定义所需特征在这 36 维数据中的索引
+    # 数据结构回顾: [Outdoor(1), Room1(5), Room2(5), ..., Room7(5)]
+    # 房间内部结构: [temp, fan, supply, return, occ]
+
+    # A. 室外温度索引 (在开头)
+    idx_outdoor = [0]
+
+    # B. 7个房间的温度索引
+    # 每个房间块的第 1 个元素 (索引偏移量为 0)
+    idx_room_temps = [1 + (i * 5) + 0 for i in range(7)]
+    # 结果应为: [1, 6, 11, 16, 21, 26, 31]
+
+    # C. 7个房间的人数索引
+    # 每个房间块的第 5 个元素 (索引偏移量为 4)
+    idx_occupants = [1 + (i * 5) + 4 for i in range(7)]
+    # 结果应为: [5, 10, 15, 20, 25, 30, 35]
+
+    # 4. 合并索引，定义输出顺序
+    # 最终顺序: [Outdoor, Temp_R1...R7, Occ_R1...R7]
+    feature_indices = idx_outdoor + idx_room_temps + idx_occupants
+
+    # 5. 使用 Numpy 高级索引提取特征
+    # 在第二个维度上应用索引
+    feature_obs = latest_frame[:, feature_indices]
+
+    # 6. 如果输入是一维，将结果降维回一维输出
+    if obs_dim == 1:
+        return feature_obs.squeeze(0)  # shape (15,)
+    else:
+        return feature_obs  # shape (N, 15)
+
 if __name__ == "__main__":
     # 创建一个随机的模拟 obs 数组用于测试
     # 实际使用时，这个 obs 会由您的环境提供

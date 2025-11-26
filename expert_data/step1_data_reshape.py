@@ -132,8 +132,8 @@ def clean_csv_file(input_filepath, output_directory, output_filename):
 if __name__ == "__main__":
     for room_id in range(1, 8):
         file_name = f'room_{room_id}_result.csv'
-        input_csv_path = f'expert_data/{file_name}'
-        output_folder = 'expert_data_new'
+        input_csv_path = f'step0_expert_data/{file_name}'
+        output_folder = 'step1_expert_data_new'
         output_csv_filename = file_name
 
         clean_csv_file(input_csv_path, output_folder, output_csv_filename)

@@ -4,8 +4,8 @@ import shutil
 import random  # 引入 random 模块用于随机选择
 
 # --- 1. 定义常量和配置 ---
-input_dir = "expert_data_clean"
-output_dir = "expert_data_augment"
+input_dir = "step2_expert_data_clean"
+output_dir = "step4_expert_data_augment"
 year = 2021
 month = 8  # 八月
 
@@ -41,7 +41,7 @@ for room, dates in room_availability_data.items():
     if room == "room_3":
         continue
     for day in dates:
-        template_filename = f"{room}_{year}_{month}_{day}_0900_2100.csv"
+        template_filename = f"{room}_{year}_{month}_{day}_0900_1900.csv"
         template_path = os.path.join(input_dir, template_filename)
         # 仅当文件实际存在时才加入模板列表
         if os.path.exists(template_path):
@@ -63,7 +63,7 @@ print("\n--- 开始处理数据：生成/复制文件至 expert_data_augment ---
 for room in all_rooms:
     for day in target_dates:
         # 构建当前文件在 expert_data_clean 和 expert_data_augment 中的路径
-        output_filename = f"{room}_{year}_{month}_{day}_0900_2100.csv"  # day:02d 格式化为两位数，如 07
+        output_filename = f"{room}_{year}_{month}_{day}_0900_1900.csv"  # day:02d 格式化为两位数，如 07
         source_path = os.path.join(input_dir, output_filename)
         destination_path = os.path.join(output_dir, output_filename)
 
