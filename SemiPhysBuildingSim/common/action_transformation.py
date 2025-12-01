@@ -168,6 +168,72 @@ def get_action_mask_fast(controllable_rooms, old_action_index, action_space):
 
     return action_mask
 
+
+def build_mask_from_recommendations(
+        recommendations,
+        action_space_n: int = 16384,
+        n_rooms: int = 7,
+        base: int = 4
+) -> np.ndarray:
+    """
+    根据每个房间的推荐动作列表构建全局动作掩码。
+
+    逻辑：
+    全局动作 Index 被视为一个 7 位的 4 进制数。
+    只有当第 i 位的数值存在于 recommendations['room_{i+1}'] 中时，该全局动作才保留。
+
+    Args:
+        recommendations (Dict): 格式如 {'room_1': [0], 'room_2': [0, 1], ...}
+        action_space_n (int): 动作空间总大小 (4^7 = 16384)。
+        n_rooms (int): 房间数量。
+        base (int): 每个房间的档位数量。
+
+    Returns:
+        np.array: 0/1 掩码数组，1 表示该全局动作符合所有房间的推荐。
+    """
+    # 1. 初始化全 1 掩码
+    action_mask = np.ones(action_space_n, dtype=np.int8)
+
+    # 创建所有动作的索引数组 [0, 1, ..., 16383]
+    all_indices = np.arange(action_space_n)
+
+    # 2. 逐个房间应用约束
+    # 假设 recommendations 的键是 "room_1", "room_2" ... "room_7"
+    for i in range(n_rooms):
+        room_key = f"room_{i + 1}"
+
+        # 获取该房间允许的动作列表，例如 [1, 2]
+        # 如果 LLM 漏掉了某个房间，默认允许所有动作（或根据需求报错/全禁）
+        allowed_actions = recommendations.get(room_key, list(range(base)))
+
+        if len(allowed_actions) == base:
+            # 如果允许该房间的所有动作，则不需要过滤
+            continue
+
+        # 计算当前房间对应的权重 (4^0, 4^1, ...)
+        # 注意：这里假设 room_1 是最低位 (Little-Endian)。
+        # 如果你的编码方式是 room_1 是最高位，请修改此处逻辑。
+        # 参照你之前的代码: multiplier = base ** room_idx，这通常意味着 room_0(即room_1) 是最低位。
+        multiplier = base ** i
+
+        # 3. 向量化计算：提取所有全局动作在该房间这一"位"上的值
+        # 公式: action_val = (global_index // 4^i) % 4
+        current_room_values = (all_indices // multiplier) % base
+
+        # 4. 判断这些值是否在允许列表中
+        # np.isin 返回一个布尔数组
+        is_valid = np.isin(current_room_values, allowed_actions)
+
+        # 5. 更新全局掩码 (逻辑与)
+        # 只有之前合法 且 当前房间也合法的动作才保留
+        action_mask &= is_valid.astype(np.int8)
+
+        # 提早退出优化：如果掩码全为0，说明没有满足条件的动作，无需继续计算
+        if not np.any(action_mask):
+            break
+
+    return action_mask
+
 if __name__ == "__main__":
     import json
     # 使用示例

@@ -2,7 +2,7 @@ import gym
 import numpy as np
 from gym import spaces
 from typing import Callable, Union, Dict, Any, Tuple
-from SemiPhysBuildingSim.common.action_transformation import action_index_to_array, array_to_action_index, get_action_mask_fast
+from SemiPhysBuildingSim.common.action_transformation import action_index_to_array, array_to_action_index, get_action_mask_fast, build_mask_from_recommendations
 from llm_baseline_prompt.llm_chat import llm_chat
 import json_repair
 import configparser
@@ -19,6 +19,9 @@ test_model_key = config['llm_api']['model'].split('/')[-1]
 
 with open('llm_baseline_prompt/zero_shot_prompt_action_reduce.txt', 'r', encoding='utf-8') as f:
     zero_shot_prompt_template = f.read()
+
+with open('llm_baseline_prompt/zero_shot_prompt_action_candidates.txt', 'r', encoding='utf-8') as f:
+    zero_shot_prompt_action_candidates_template = f.read()
 
 print(f"===================== llm config loading: {test_model_key} =====================")
 
@@ -164,6 +167,102 @@ def get_action_mask_from_llm(
     return action_mask
 
 
+def get_recommendations_from_llm(
+        obs,
+        prompt_template,
+        config
+):
+    """
+    集成所有步骤：解释 obs -> 构造 prompt -> 调用 LLM -> 解析 confidence_scores。
+    """
+    # 1. 解释 obs
+    status_text = interpret_obs(obs)
+
+    # 2. 构造完整 Prompt
+    full_prompt = prompt_template.replace("[Status Need Replacement]", status_text)
+
+    # 3. 准备调用 LLM
+    llm_api_key = config['llm_api']['api_key']
+    llm_base_url = config['llm_api']['url']
+    llm_model = config['llm_api']['model']
+
+    messages = [
+        # prompt.txt 的内容更适合作为 user prompt，因为它直接给出了任务指令
+        {"role": "user", "content": full_prompt}
+    ]
+
+    # 4. 调用 LLM 并获取响应
+    print("===================== Sending Prompt to LLM =====================")
+    # print(full_prompt)
+    print("=================================================================")
+
+    response_str = llm_chat(llm_api_key, llm_model, llm_base_url, messages)
+
+    # print(f"LLM Response (raw): {response_str}")
+
+    # 5. 解析 LLM 响应
+    try:
+        response_dict = json_repair.loads(response_str)
+        recommendations = response_dict["recommendations"]
+    except Exception as e:
+        print(f"Error parsing LLM response: {e}.")
+        recommendations = None
+
+    try:
+        action_dict = json_repair.loads(response_str)
+        reason = action_dict["analysis"]
+    except Exception as e:
+        print(f"Error parsing LLM response: {e}. Using default reason 'No analysis provided'.")
+        reason = "No analysis provided"
+
+    return recommendations, reason
+
+
+def get_action_mask_from_llm_2nd(
+    obs: Union[np.ndarray, Dict[str, np.ndarray]],
+    last_action: int,
+    action_space: spaces.Discrete
+) -> np.ndarray:
+    """
+    从 LLM 中获取动作掩码。
+
+    :param obs: 环境的观测值。
+    :param last_action: 上一步执行的动作。
+    :param action_space: 环境的离散动作空间。
+    :return: 从 LLM 中获取的动作掩码。
+    """
+    # 1. 获取 LLM 反馈
+    recommendations, reason = get_recommendations_from_llm(obs, zero_shot_prompt_action_candidates_template, config)
+
+    print(f"LLM Reason: {reason}")
+    print(f"LLM Recommendations: {recommendations}")
+
+    # 2. 检查 recommendations 是否为空（解析失败或 LLM 拒绝回答）
+    if not recommendations:
+        print("Warning: Using empty recommendations. Falling back to allowing ALL actions (or handle specifically).")
+        # 策略 A: 允许所有动作
+        return np.ones(action_space.n, dtype=np.int8)
+        # 策略 B: 保持上一时刻动作 (如果需要的话，可以在这里通过 last_action 构建一个只包含 last_action 的 mask)
+
+    # 3. 构建 mask
+    action_mask = build_mask_from_recommendations(
+        recommendations,
+        action_space_n=action_space.n,
+        n_rooms=7,
+        base=4
+    )
+
+    # 4. 安全检查：防止 mask 全为 0 (导致 RL 崩溃)
+    if not np.any(action_mask):
+        print("Critical Warning: Action mask is all zeros! LLM constraints were too strict or disjoint.")
+        # 应急策略：回退到上一时刻的动作，或者允许所有动作
+        # 这里演示回退到上一时刻动作
+        fallback_mask = np.zeros(action_space.n, dtype=np.int8)
+        fallback_mask[last_action] = 1
+        return fallback_mask
+
+    print(f"Valid actions count: {np.sum(action_mask)} / {action_space.n}")
+    return action_mask
 
 
 class ActionMasker(gym.Wrapper):
