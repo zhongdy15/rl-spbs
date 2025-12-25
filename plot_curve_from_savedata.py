@@ -5,7 +5,7 @@ import pickle
 
 # === 配置部分 ===
 # 【请在这里填写第一步生成的pkl文件路径】
-target_file = 'enjoy_data/llm_am_random_baseline_251126/Qwen2.5-72B-Instruct/2025-11-26_15-45-18.pkl'
+target_file = 'enjoy_data/llm_am_random_baseline_251126/Meta-Llama-3-8B-Instruct-Merge/2025-12-01_13-40-47.pkl'
 
 # 为了方便，如果不知道具体文件名，这里自动查找文件夹里最新的pkl文件
 save_folder = os.path.dirname(target_file)
