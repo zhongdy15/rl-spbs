@@ -1,7 +1,7 @@
 import os
 import time
 
-algo_list = ["ppo"]
+algo_list = ["bdq"]
 seed_list = [0,10,20,30,40]
 gpu_list = [6]
 reward_mode = "Baseline_OCC_PPD_with_energy"
