@@ -53,7 +53,7 @@ for test_model_key_base in rl_baseline_251105.keys():
 
         env1 = ObsHistoryWrapper(env1, horizon=frame_skip)
         env1 = FrameSkip(env1, skip=frame_skip)
-        env1 = ActionMasker(env1)
+        # env1 = ActionMasker(env1)
 
         print("Frame skip: " + str(frame_skip))
 
