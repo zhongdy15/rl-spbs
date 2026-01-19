@@ -18,8 +18,8 @@ save_folder = 'rl_baseline_0119'
 rl_baseline_251105 = {
     # "ppo": "logs/ppo_Baseline_OCC_PPD_with_energy_10_2025-12-25-15-05-41/ppo/SemiPhysBuildingSim-v0_1",
     # "a2c": "logs/a2c_Baseline_OCC_PPD_with_energy_10_2025-12-25-15-03-44/a2c/SemiPhysBuildingSim-v0_1",
-    "bdq": "logs/bdq_Baseline_OCC_PPD_with_energy_10_2026-01-19-10-51-25/bdq/SemiPhysBuildingSim-v0_1",
-    # "dqn": "logs/dqn_Baseline_OCC_PPD_with_energy_10_2026-01-19-10-47-55/dqn/SemiPhysBuildingSim-v0_1"
+    # "bdq": "logs/bdq_Baseline_OCC_PPD_with_energy_10_2026-01-19-10-51-25/bdq/SemiPhysBuildingSim-v0_1",
+    "dqn": "logs/dqn_Baseline_OCC_PPD_with_energy_10_2026-01-19-10-47-55/dqn/SemiPhysBuildingSim-v0_1"
 }
 # test_model_key_base = "dqn"
 
