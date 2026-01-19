@@ -1,6 +1,7 @@
 from stable_baselines3 import DQN
 from stable_baselines3 import PPO
 from stable_baselines3 import A2C
+from bdq.bdq import BDQ
 import SemiPhysBuildingSim
 import gym
 import numpy as np
@@ -11,7 +12,7 @@ import datetime
 import os # 导入 os 模块来创建文件夹
 from interpret_obs import interpret_obs
 
-algo_classes = {"ppo": PPO,"a2c": A2C,"dqn": DQN,}
+algo_classes = {"ppo": PPO,"a2c": A2C,"dqn": DQN,"bdq": BDQ}
 
 save_folder = 'rl_baseline_0119'
 rl_baseline_251105 = {
