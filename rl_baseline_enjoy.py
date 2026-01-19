@@ -13,7 +13,7 @@ from interpret_obs import interpret_obs
 
 algo_classes = {"ppo": PPO,"a2c": A2C,"dqn": DQN,}
 
-save_folder = 'action_mask_test_1118'
+save_folder = 'rl_baseline_0119'
 rl_baseline_251105 = {"ppo": "logs/ppo_Baseline_OCC_PPD_with_energy_10_2025-12-25-15-05-41/ppo/SemiPhysBuildingSim-v0_1",
                        "a2c": "logs/a2c_Baseline_OCC_PPD_with_energy_10_2025-12-25-15-03-44/a2c/SemiPhysBuildingSim-v0_1",
                        # "dqn": "logs/dqn_Baseline_OCC_PPD_with_energy_10_2025-11-11-16-38-57/dqn/SemiPhysBuildingSim-v0_1"
