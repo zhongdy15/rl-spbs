@@ -14,16 +14,23 @@ from interpret_obs import interpret_obs
 
 algo_classes = {"ppo": PPO,"a2c": A2C,"dqn": DQN,"bdq": BDQ}
 
-save_folder = 'rl_baseline_0119'
-rl_baseline_251105 = {
-    # "ppo": "logs/ppo_Baseline_OCC_PPD_with_energy_10_2025-12-25-15-05-41/ppo/SemiPhysBuildingSim-v0_1",
-    # "a2c": "logs/a2c_Baseline_OCC_PPD_with_energy_10_2025-12-25-15-03-44/a2c/SemiPhysBuildingSim-v0_1",
-    # "bdq": "logs/bdq_Baseline_OCC_PPD_with_energy_10_2026-01-19-10-51-25/bdq/SemiPhysBuildingSim-v0_1",
-    "dqn": "logs/dqn_Baseline_OCC_PPD_with_energy_10_2026-01-19-10-47-55/dqn/SemiPhysBuildingSim-v0_1"
-}
-# test_model_key_base = "dqn"
+# save_folder = 'rl_baseline_0119'
+# rl_baseline_251105 = {
+#     "ppo": "logs/ppo_Baseline_OCC_PPD_with_energy_10_2025-12-25-15-05-41/ppo/SemiPhysBuildingSim-v0_1",
+#     "a2c": "logs/a2c_Baseline_OCC_PPD_with_energy_10_2025-12-25-15-03-44/a2c/SemiPhysBuildingSim-v0_1",
+#     "bdq": "logs/bdq_Baseline_OCC_PPD_with_energy_10_2026-01-19-10-51-25/bdq/SemiPhysBuildingSim-v0_1",
+#     "dqn": "logs/dqn_Baseline_OCC_PPD_with_energy_10_2026-01-19-10-47-55/dqn/SemiPhysBuildingSim-v0_1"
+# }
 
-seed_num = 1
+save_folder = 'rl_baseline_0121_bdq'
+rl_baseline_251105 = {
+    # "ppo": "D:\\research\\remote_logs\\260119_llmrl_a2cppo复现\\ppo_Baseline_OCC_PPD_with_energy_10_2025-12-25-15-05-41\\ppo\\SemiPhysBuildingSim-v0_1",
+    # "a2c": "D:\\research\\remote_logs\\260119_llmrl_a2cppo复现\\a2c_Baseline_OCC_PPD_with_energy_10_2025-12-25-15-03-44\\a2c\\SemiPhysBuildingSim-v0_1",
+    "bdq": "D:\\research\\remote_logs\\260119_llmrl_a2cppo复现\\bdq_Baseline_OCC_PPD_with_energy_10_2026-01-19-10-51-25\\bdq\\SemiPhysBuildingSim-v0_1",
+    # "dqn": "D:\\research\\remote_logs\\260119_llmrl_a2cppo复现\dqn_Baseline_OCC_PPD_with_energy_10_2026-01-19-10-47-55\dqn\SemiPhysBuildingSim-v0_1",
+}
+
+seed_num = 5
 for test_model_key_base in rl_baseline_251105.keys():
 
     for i in range(seed_num):
