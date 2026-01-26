@@ -80,7 +80,8 @@ def build_sft_dataset(
         # 注意：由于我们是从数据中统计得出的结果，没有专家的文本推理过程。
         # 为了满足 JSON 格式要求，我们生成一个通用的 analysis 字段。
         json_response = {
-            "analysis": "Based on the historical room temperature trends, occupancy levels, and outdoor conditions provided in the input, a statistical pattern analysis matches the current state to optimal historical control strategies. The recommended fan speeds listed below aim to maintain the target temperature range (25-27°C) while optimizing energy efficiency.",
+            # "analysis": "Based on the historical room temperature trends, occupancy levels, and outdoor conditions provided in the input, a statistical pattern analysis matches the current state to optimal historical control strategies. The recommended fan speeds listed below aim to maintain the target temperature range (25-27°C) while optimizing energy efficiency.",
+            "analysis": "",
             "recommendations": recommendations
         }
 
