@@ -97,16 +97,38 @@ class QNetwork(BasePolicy):
         """
         return self.q_net(self.extract_features(obs, self.features_extractor))
 
-    def _predict(self, observation: th.Tensor, deterministic: bool = True, action_mask: Optional[th.Tensor] = None) -> th.Tensor:
-        q_values = self(observation)
+    # def _predict(self, observation: th.Tensor, deterministic: bool = True, action_mask: Optional[th.Tensor] = None) -> th.Tensor:
+    #     q_values = self(observation)
+    #
+    #     if action_mask is not None:
+    #         # action_mask: (batch_size, n_actions)，0 表示非法
+    #         # action_mask = action_mask
+    #         # q_values = q_values + (action_mask - 1) * 1e8  # 非法动作 Q -= 极大值
+    #         q_values[action_mask == 0] = -1e10
+    #
+    #     # Greedy action
+    #     action = q_values.argmax(dim=1).reshape(-1)
+    #     return action
+    def _predict(self, observation: th.Tensor, deterministic: bool = True,
+                 action_mask: Optional[th.Tensor] = None) -> th.Tensor:
+        q_values = self(observation)  # (batch, n_actions)
 
         if action_mask is not None:
-            # action_mask: (batch_size, n_actions)，0 表示非法
-            # action_mask = action_mask
-            # q_values = q_values + (action_mask - 1) * 1e8  # 非法动作 Q -= 极大值
-            q_values[action_mask == 0] = -1e10
+            if not isinstance(action_mask, th.Tensor):
+                action_mask = th.as_tensor(action_mask)
 
-        # Greedy action
+            # 确保在同一设备上
+            action_mask = action_mask.to(device=q_values.device)
+
+            # 确保维度匹配：把 (n_actions,) 变成 (1, n_actions)
+            if action_mask.dim() == 1:
+                action_mask = action_mask.unsqueeze(0)
+
+            # 最关键：mask shape 必须和 q_values 完全一致
+            action_mask = action_mask.view_as(q_values)
+
+            q_values = q_values.masked_fill(action_mask == 0, -1e10)
+
         action = q_values.argmax(dim=1).reshape(-1)
         return action
 
