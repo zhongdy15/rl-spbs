@@ -196,8 +196,10 @@ def get_recommendations_from_llm(
     # # print(full_prompt)
     # print("=================================================================")
 
-    response_str = llm_chat(llm_api_key, llm_model, llm_base_url, messages)
+    # response_str = llm_chat(llm_api_key, llm_model, llm_base_url, messages)
 
+    # FOR TEST
+    response_str = "{\"analysis\": \"\", \"recommendations\": {\"room_1\": [0, 1, 2, 3], \"room_2\": [0, 1, 2, 3], \"room_3\": [0, 1, 2, 3], \"room_4\": [0, 1, 2, 3], \"room_5\": [0, 1, 2, 3], \"room_6\": [0, 1, 2, 3], \"room_7\": [0, 1, 2, 3]}}"
     # print(f"LLM Response (raw): {response_str}")
 
     # 5. 解析 LLM 响应
