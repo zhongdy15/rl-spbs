@@ -1,9 +1,9 @@
 import os
 import time
 
-algo_list = ["dqn"] #["dqn",] #["dqn_mask"] #["dqn_original"] #["dqn"]
+algo_list = ["dqn_mask"] #["dqn",] #["dqn_mask"] #["dqn_original"] #["dqn"]
 seed_list = [0,10,20,30,40]
-gpu_list = [2]
+gpu_list = [1]
 reward_mode = "Baseline_OCC_PPD_with_energy"
 tradeoff_constant = 10
 
