@@ -105,9 +105,9 @@ def get_confidence_scores_from_llm(obs: np.ndarray, prompt_template: str, config
     ]
 
     # 4. 调用 LLM 并获取响应
-    print("===================== Sending Prompt to LLM =====================")
-    # print(full_prompt)
-    print("=================================================================")
+    # print("===================== Sending Prompt to LLM =====================")
+    # # print(full_prompt)
+    # print("=================================================================")
 
     response_str = llm_chat(llm_api_key, llm_model, llm_base_url, messages)
 
@@ -192,9 +192,9 @@ def get_recommendations_from_llm(
     ]
 
     # 4. 调用 LLM 并获取响应
-    print("===================== Sending Prompt to LLM =====================")
-    # print(full_prompt)
-    print("=================================================================")
+    # print("===================== Sending Prompt to LLM =====================")
+    # # print(full_prompt)
+    # print("=================================================================")
 
     response_str = llm_chat(llm_api_key, llm_model, llm_base_url, messages)
 
@@ -234,8 +234,8 @@ def get_action_mask_from_llm_2nd(
     # 1. 获取 LLM 反馈
     recommendations, reason = get_recommendations_from_llm(obs, zero_shot_prompt_action_candidates_template, config)
 
-    print(f"LLM Reason: {reason}")
-    print(f"LLM Recommendations: {recommendations}")
+    # print(f"LLM Reason: {reason}")
+    # print(f"LLM Recommendations: {recommendations}")
 
     # 2. 检查 recommendations 是否为空（解析失败或 LLM 拒绝回答）
     if not recommendations:
@@ -261,7 +261,7 @@ def get_action_mask_from_llm_2nd(
         fallback_mask[last_action] = 1
         return fallback_mask
 
-    print(f"Valid actions count: {np.sum(action_mask)} / {action_space.n}")
+    # print(f"Valid actions count: {np.sum(action_mask)} / {action_space.n}")
     return action_mask
 
 
