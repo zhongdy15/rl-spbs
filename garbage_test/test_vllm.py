@@ -21,6 +21,7 @@ def test_and_interact_vllm():
         # 尝试列出模型以确认连接
         print("尝试调用 client.models.list() 确认连接...")
         models_response = client.models.list()
+        print(models_response)
 
         # 尝试获取一个可用的模型ID，用于后续对话。
         # vLLM通常会返回一个模型ID，比如你加载的模型名称。
