@@ -148,7 +148,8 @@ except FileNotFoundError:
     print("错误：找不到 prompt 模板文件，使用默认空模板。")
     zero_shot_prompt_template = "[Status Need Replacement]"
 
-save_folder = 'llm_rl_baseline_260127'
+# save_folder = 'llm_rl_baseline_260127'
+save_folder = 'llm_baseline_bdqexpert_260127'
 print("results saved in: " + save_folder)
 print("test model key: " + test_model_key)
 

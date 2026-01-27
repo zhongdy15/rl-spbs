@@ -272,7 +272,7 @@ class ActionMasker(gym.Wrapper):
     它使用一个可配置的函数来根据当前观测值和动作空间生成掩码。
     """
 
-    def __init__(self, env: gym.Env, action_mask_fn: ActionMaskFn = get_action_mask_from_llm):
+    def __init__(self, env: gym.Env, action_mask_fn: ActionMaskFn = get_action_mask_from_llm_2nd):
         """
         初始化 Wrapper。
 
