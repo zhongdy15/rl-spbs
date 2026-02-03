@@ -234,6 +234,63 @@ def build_mask_from_recommendations(
 
     return action_mask
 
+
+def build_mask_from_matrix(
+        valid_mask_matrix: np.ndarray,
+        action_space_n: int = 16384,
+        n_rooms: int = 7,
+        base: int = 4
+) -> np.ndarray:
+    """
+    根据 KNN 检索到的 (n_rooms, base) 矩阵构建全局动作掩码。
+    逻辑完全复刻 build_mask_from_recommendations，但针对 numpy 矩阵优化。
+
+    Args:
+        valid_mask_matrix: Shape (7, 4)，由 KNN 检索得到。1代表可行，0代表不可行。
+        action_space_n: 动作空间大小 (e.g. 16384)。
+    """
+    # 1. 初始化全 1 掩码
+    action_mask = np.ones(action_space_n, dtype=np.int8)
+
+    # 创建所有动作的索引数组 [0, 1, ..., 16383]
+    all_indices = np.arange(action_space_n)
+
+    # 2. 逐个房间应用约束
+    for i in range(n_rooms):
+        # valid_mask_matrix[i] 是一个 shape 为 (4,) 的数组，例如 [0, 1, 0, 1]
+        # np.where 返回满足条件的索引元组，取 [0] 拿到索引数组
+        allowed_actions = np.where(valid_mask_matrix[i] == 1)[0]
+
+        # 优化：如果该房间允许所有动作，跳过过滤
+        if len(allowed_actions) == base:
+            continue
+
+        # 如果该房间没有任何允许动作（可能是数据清洗问题），不仅会导致 mask 全0，
+        # 在逻辑上也是错误的。这里为了鲁棒性，如果遇到全0，暂时跳过（或由后续的全0检查捕获）
+        if len(allowed_actions) == 0:
+            # 策略：如果某房间数据异常全为0，这里可以不做限制，或者视为全禁止
+            # 考虑到后续有 "critical warning" 检查，这里让它通过比较安全
+            continue
+
+        # 计算权重 (4^0, 4^1, ...) - 保持与你提供的代码逻辑一致 (Little-Endian)
+        multiplier = base ** i
+
+        # 3. 向量化计算：提取所有全局动作在该房间这一"位"上的值
+        current_room_values = (all_indices // multiplier) % base
+
+        # 4. 判断合法性
+        is_valid = np.isin(current_room_values, allowed_actions)
+
+        # 5. 更新全局掩码
+        action_mask &= is_valid.astype(np.int8)
+
+        # 提早退出优化
+        if not np.any(action_mask):
+            break
+
+    return action_mask
+
+
 if __name__ == "__main__":
     import json
     # 使用示例

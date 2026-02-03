@@ -2,7 +2,7 @@ import gym
 import numpy as np
 from gym import spaces
 from typing import Callable, Union, Dict, Any, Tuple
-from SemiPhysBuildingSim.common.action_transformation import action_index_to_array, array_to_action_index, get_action_mask_fast, build_mask_from_recommendations
+from SemiPhysBuildingSim.common.action_transformation import action_index_to_array, array_to_action_index, get_action_mask_fast, build_mask_from_recommendations, build_mask_from_matrix
 from llm_baseline_prompt.llm_chat import llm_chat
 import json_repair
 import configparser
@@ -24,6 +24,145 @@ with open('llm_baseline_prompt/zero_shot_prompt_action_candidates.txt', 'r', enc
     zero_shot_prompt_action_candidates_template = f.read()
 
 print(f"===================== llm config loading: {test_model_key} =====================")
+
+
+print("===================== knn config loading =====================")
+from sklearn.neighbors import NearestNeighbors
+
+# 全局缓存存储器
+class KNNCacheStorage:
+    _instance = None
+    knn_model = None
+    expert_masks = None
+    expert_obs = None
+
+    @classmethod
+    def initialize(cls, npz_path):
+        """加载数据并训练 KNN，只需调用一次"""
+        if cls.knn_model is not None:
+            return  # 避免重复加载
+
+        print(f"[KNNCache] Loading data from {npz_path}...")
+        try:
+            data = np.load(npz_path)
+            cls.expert_obs = data["obs"]
+            cls.expert_masks = data["valid_mask"]  # Shape: (N, 7, 4)
+
+            print(f"[KNNCache] Building KNN model with {len(cls.expert_obs)} samples...")
+            cls.knn_model = NearestNeighbors(n_neighbors=1, metric="euclidean")
+            cls.knn_model.fit(cls.expert_obs)
+            print("[KNNCache] Initialization complete.")
+
+        except FileNotFoundError:
+            raise FileNotFoundError(f"[KNNCache] Error: Cannot find {npz_path}")
+        except Exception as e:
+            raise RuntimeError(f"[KNNCache] Initialization failed: {e}")
+
+    @classmethod
+    def is_ready(cls):
+        return cls.knn_model is not None
+
+
+knn_data_path = "sft_construction/sft_data_v9/obs_with_valid_mask_N50_ep0.00.npz"
+KNNCacheStorage.initialize(knn_data_path)
+
+print("===================== knn config loading =====================")
+
+
+def get_action_mask_from_cache(
+        obs: Union[np.ndarray, Dict[str, np.ndarray]],
+        last_action: int,
+        action_space: spaces.Space
+) -> np.ndarray:
+    """
+    从 KNN 缓存中获取动作掩码 (Action Mask)。
+
+    逻辑流程：
+    1. 根据当前 obs 在专家数据库中查找最近邻 (Nearest Neighbor)。
+    2. 提取该最近邻对应的 mask。
+    3. 格式化 mask 以适配 action_space。
+    4. 安全检查 (防止全0 mask)。
+
+    :param obs: 环境的观测值。
+    :param last_action: 上一步执行的动作 (用于 fallback)。
+    :param action_space: 环境的动作空间 (Discrete 或 MultiDiscrete)。
+    :return: 构造好的动作掩码。
+    """
+
+    # 0. 检查缓存是否初始化
+    if not KNNCacheStorage.is_ready():
+        raise RuntimeError("[KNNCache] Error: KNN Cache not initialized! Please call initialize() first.")
+        # 如果未初始化，尝试使用默认路径或报错（这里演示一种 fail-safe 策略：允许所有动作）
+        # print("Warning: KNN Cache not initialized! Returning allow-all mask.")
+        # if isinstance(action_space, spaces.Discrete):
+        #     return np.ones(action_space.n, dtype=np.int8)
+        # elif isinstance(action_space, spaces.MultiDiscrete):
+        #     return np.ones(np.sum(action_space.nvec), dtype=np.int8)
+
+    # 1. 获取 KNN 检索结果 (等同于 '获取 LLM 反馈')
+    # 处理 obs: 如果是 Dict (Gym常用)，通常取 'observation'；如果是 Array 直接用
+    if isinstance(obs, dict):
+        # 假设 key 是 'observation'，根据实际环境调整
+        query_obs = obs.get('observation', list(obs.values())[0])
+    else:
+        query_obs = obs
+
+    # KNN 需要 (n_samples, n_features) 形状，这里 flatten 并 reshape
+    query_obs = query_obs.reshape(1, -1)
+
+    # 查询最近邻
+    try:
+        _, indices = KNNCacheStorage.knn_model.kneighbors(query_obs)
+        neighbor_idx = indices[0][0]
+        retrieved_mask = KNNCacheStorage.expert_masks[neighbor_idx]  # Shape 预期为 (7, 4)
+    except Exception as e:
+        print(f"Warning: KNN query failed ({e}). Falling back to allow-all.")
+        retrieved_mask = None
+
+    # 2. 检查结果是否为空 (等同于 check recommendations)
+    if retrieved_mask is None:
+        raise ValueError("[KNNCache] Error: KNN Cache returned None mask! Please check the data.")
+        # # 策略 A: 允许所有动作
+        # if isinstance(action_space, spaces.Discrete):
+        #     return np.ones(action_space.n, dtype=np.int8)
+        # else:
+        #     return np.ones(np.sum(action_space.nvec), dtype=np.int8)
+
+    # 3. 构建 mask (这里替换了原来的 flatten 逻辑)
+    # 使用专门处理 16384 空间的函数
+    action_mask = build_mask_from_matrix(
+        valid_mask_matrix=retrieved_mask,
+        action_space_n=action_space.n,
+        n_rooms=7,
+        base=4
+    )
+
+    # 如果 action_space 是 Discrete，通常 mask 长度需要等于 action_space.n
+    # 如果 action_space 是 MultiDiscrete，mask 长度通常是 sum(nvec)
+    # 此时 action_mask 已经是 (28,)，通常能直接适配 SB3 的 ActionMasker
+
+    # 4. 安全检查：防止 mask 全为 0 (导致 RL 崩溃)
+    if not np.any(action_mask):
+        print(f"Critical Warning: Retrieved KNN mask (idx {neighbor_idx}) is all zeros!")
+
+        # 应急策略：回退到上一时刻的动作 (Strategy B)
+        # 注意：需要确保 fallback_mask 的形状正确
+        fallback_mask = np.zeros_like(action_mask, dtype=np.int8)
+
+        # 如果 last_action 是有效索引 (针对 Discrete)
+        # 如果是 MultiDiscrete，last_action 可能是个数组，这里需要根据具体环境逻辑处理
+        # 假设这里是简化处理，或者为了安全直接返回全 1
+
+        if isinstance(last_action, (int, np.integer)) and last_action < len(fallback_mask):
+            fallback_mask[last_action] = 1
+            return fallback_mask
+        else:
+            # 如果无法通过 last_action 恢复，则允许所有动作
+            return np.ones_like(action_mask, dtype=np.int8)
+
+    # print(f"Valid actions count: {np.sum(action_mask)} / {len(action_mask)}")
+    return action_mask
+
 
 def get_dummy_action_mask(
     obs: Union[np.ndarray, Dict[str, np.ndarray]],
@@ -274,7 +413,7 @@ class ActionMasker(gym.Wrapper):
     它使用一个可配置的函数来根据当前观测值和动作空间生成掩码。
     """
 
-    def __init__(self, env: gym.Env, action_mask_fn: ActionMaskFn = get_action_mask_from_llm_2nd):
+    def __init__(self, env: gym.Env, action_mask_fn: ActionMaskFn = get_action_mask_from_cache):
         """
         初始化 Wrapper。
 
