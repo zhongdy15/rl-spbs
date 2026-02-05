@@ -110,14 +110,16 @@ def get_action_mask_from_cache(
     # KNN 需要 (n_samples, n_features) 形状，这里 flatten 并 reshape
     query_obs = query_obs.reshape(1, -1)
 
-    # 查询最近邻
-    try:
-        _, indices = KNNCacheStorage.knn_model.kneighbors(query_obs)
-        neighbor_idx = indices[0][0]
-        retrieved_mask = KNNCacheStorage.expert_masks[neighbor_idx]  # Shape 预期为 (7, 4)
-    except Exception as e:
-        print(f"Warning: KNN query failed ({e}). Falling back to allow-all.")
-        retrieved_mask = None
+    # # 查询最近邻
+    # try:
+    #     _, indices = KNNCacheStorage.knn_model.kneighbors(query_obs)
+    #     neighbor_idx = indices[0][0]
+    #     retrieved_mask = KNNCacheStorage.expert_masks[neighbor_idx]  # Shape 预期为 (7, 4)
+    # except Exception as e:
+    #     print(f"Warning: KNN query failed ({e}). Falling back to allow-all.")
+    #     retrieved_mask = None
+    # ONLY FOR TEST:
+    retrieved_mask = np.ones_like(KNNCacheStorage.expert_masks[0])
 
     # 2. 检查结果是否为空 (等同于 check recommendations)
     if retrieved_mask is None:
@@ -143,22 +145,7 @@ def get_action_mask_from_cache(
 
     # 4. 安全检查：防止 mask 全为 0 (导致 RL 崩溃)
     if not np.any(action_mask):
-        print(f"Critical Warning: Retrieved KNN mask (idx {neighbor_idx}) is all zeros!")
-
-        # 应急策略：回退到上一时刻的动作 (Strategy B)
-        # 注意：需要确保 fallback_mask 的形状正确
-        fallback_mask = np.zeros_like(action_mask, dtype=np.int8)
-
-        # 如果 last_action 是有效索引 (针对 Discrete)
-        # 如果是 MultiDiscrete，last_action 可能是个数组，这里需要根据具体环境逻辑处理
-        # 假设这里是简化处理，或者为了安全直接返回全 1
-
-        if isinstance(last_action, (int, np.integer)) and last_action < len(fallback_mask):
-            fallback_mask[last_action] = 1
-            return fallback_mask
-        else:
-            # 如果无法通过 last_action 恢复，则允许所有动作
-            return np.ones_like(action_mask, dtype=np.int8)
+        raise ValueError(f"Critical Warning: Retrieved KNN mask (idx {neighbor_idx}) is all zeros!")
 
     # print(f"Valid actions count: {np.sum(action_mask)} / {len(action_mask)}")
     return action_mask
