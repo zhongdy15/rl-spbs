@@ -414,6 +414,7 @@ class ActionMasker(gym.Wrapper):
             raise ValueError("ActionMasker only supports Discrete action spaces.")
 
         self.action_mask_fn = action_mask_fn
+        self.current_mask = None
 
     def _get_action_mask(self, obs: Union[np.ndarray, Dict[str, np.ndarray]], last_action: int) -> np.ndarray:
         """
@@ -430,5 +431,11 @@ class ActionMasker(gym.Wrapper):
 
         action_mask = self._get_action_mask(obs=obs, last_action=action)
         info['action_mask'] = action_mask
+        self.current_mask = action_mask
 
         return obs, reward, done, info
+
+    def reset(self):
+        obs = self.env.reset()
+        self.current_mask = self._get_action_mask(obs=obs, last_action=None)
+        return obs
